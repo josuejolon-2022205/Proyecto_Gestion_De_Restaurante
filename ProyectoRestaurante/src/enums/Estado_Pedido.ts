@@ -1,0 +1,7 @@
+export enum estado_pedido{
+    ENTREGADO = "ENTRAGADO",
+    PREPARACION = "PREPARACION",
+    ENTRAGADO = "ENTRAGADO",
+    CANCELADO = "CANCELADO",
+
+}
