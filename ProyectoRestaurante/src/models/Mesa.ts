@@ -1,8 +1,8 @@
-import { estado_mesa } from "../enums/Estado_mesa";
+import { estadoMesa } from "../enums/EstadoMesa";
 
 export interface Mesa{
     id_mesa: number;
-    estado_mesa: estado_mesa;
+    estado_mesa: estadoMesa;
     numero_mesa: number;
     capacidad: number;
 }
