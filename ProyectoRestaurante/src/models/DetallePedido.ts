@@ -1,4 +1,4 @@
-export interface detalle_pedido{
+export interface detallePedido{
     id_detalle_pedido: number,
     cantidad: number,
     precio_unitario: number,

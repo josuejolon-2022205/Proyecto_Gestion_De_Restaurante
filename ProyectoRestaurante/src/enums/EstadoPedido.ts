@@ -1,4 +1,4 @@
-export enum estado_pedido{
+export enum estadoPedido{
     ENTREGADO = "ENTRAGADO",
     PREPARACION = "PREPARACION",
     ENTRAGADO = "ENTRAGADO",
