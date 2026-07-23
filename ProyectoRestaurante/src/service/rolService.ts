@@ -14,7 +14,7 @@ export class RolService {
     }
 
     async guardarRol(rol: Rol): Promise<void> {
-        const existe = await this.repository.obtenerRolPorId(rol.id_rol);
+        const existe = await this.repository.obtenerRolPorId(rol.idRol);
 
         if (existe) {
             throw new Error("El ID de rol ya existe.");
