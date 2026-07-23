@@ -1,13 +1,12 @@
 import { estadoPedido } from "../enums/EstadoPedido";
 
-export interface Pedido{
-    id_pedido: number; 
-    fecha_pedido: Date;
-    hora_pedido: string;
-    estado_pedido: estadoPedido,
-    total: number,
-    id_cliente: number,
-    id_mesa: number,
-    id_empleado:number
-
+export interface Pedido {
+    idPedido: number;
+    fechaPedido: string;
+    horaPedido: string;
+    estadoPedido: estadoPedido;
+    total: number;
+    fkIdCliente: number;
+    fkIdMesa: number;
+    fkIdEmpleado: number;
 }

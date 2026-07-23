@@ -1,11 +1,11 @@
 import { estadoReserva } from "../enums/EstadoReserva";
 
-export interface Reserva{
-    id_reserva: number,
-    fecha_reserva: Date,
-    hora_reservada: string,
-    cantidad_personas: number,
-    estado: estadoReserva,
-    id_cliente: number,
-    id_mesa: number
+export interface Reserva {
+    idReserva: number;
+    fechaReserva: string;
+    horaReserva: string;
+    cantidadPersonas: number;
+    estado: estadoReserva;
+    fkIdCliente: number;
+    fkIdMesa: number;
 }

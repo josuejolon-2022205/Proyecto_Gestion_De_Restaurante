@@ -1,7 +1,7 @@
-export interface pago{
-    id_pago: number,
-    fecha_pago: Date,
-    monto: number,
-    metodo_pago: string,
-    id_pedido: number
+export interface Pago {
+    idPago: number;
+    fechaPago: string;
+    monto: number;
+    metodoPago: string;
+    fkIdPedido: number;
 }

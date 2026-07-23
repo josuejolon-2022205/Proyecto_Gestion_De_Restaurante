@@ -1,8 +1,8 @@
-export interface movimiento_inventario{
-    id_movimiento: number,
-    tipo_movimiento: string,
-    cantidad: number,
-    fecha_movimiento: Date,
-    descripcion: string,
-    id_ingrediente: number
+export interface MovimientoInventario {
+    idMovimiento: number;
+    tipoMovimiento: string;
+    cantidad: number;
+    fechaMovimiento: string;
+    descripcion: string;
+    fkIdIngrediente: number;
 }

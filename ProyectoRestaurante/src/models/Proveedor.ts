@@ -1,7 +1,7 @@
-export interface proveedor{
-    id_proveedor: number,
-    nombre_proveedor: string,
-    telefono_proveedor: string,
-    correo_proveedor: string,
-    direccion_proveedor: string,
+export interface Proveedor {
+    idProveedor: number;
+    nombreProveedor: string;
+    telefonoProveedor: string;
+    correoProveedor: string;
+    direccion: string;
 }
