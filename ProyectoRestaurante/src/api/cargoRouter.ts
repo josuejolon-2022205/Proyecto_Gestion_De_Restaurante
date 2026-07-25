@@ -66,7 +66,7 @@ export async function routerCargo(req: IncomingMessage, res: ServerResponse) {
       return;
     }
 
-    sendJson(res, 404, { mensaje: "Ruta no encontrada" });
+    return
 
   } catch (error) {
     sendJson(res, 500, { mensaje: (error as Error).message });

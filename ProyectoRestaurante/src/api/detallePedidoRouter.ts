@@ -36,7 +36,7 @@ export async function routerDetallePedido(req: IncomingMessage, res: ServerRespo
             return;
         }
 
-        sendJson(res, 404, { error: "No se encontro la ruta" });
+        return
 
     } catch (error) {
         sendJson(res, 500, { error: (error as Error).message });
