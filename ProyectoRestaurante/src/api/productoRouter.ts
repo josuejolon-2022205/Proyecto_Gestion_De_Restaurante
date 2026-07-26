@@ -34,14 +34,14 @@ export async function routerProducto(req: IncomingMessage, res: ServerResponse) 
 
         if (metodo === "POST" && url === "/productos") {
             const body = await ReadBody(req);
-
             await routeHandler(res, async () => {
                 const p = JSON.parse(body);
-                await service.guardarProducto(p);
-                sendJson(res, 201, { mensaje: "Producto agregado correctamente" });
+                const nuevo = await service.guardarProducto(p);
+                sendJson(res, 201, { mensaje: "Producto agregado correctamente", producto: nuevo });
             });
             return;
         }
+
 
         if (metodo === "PUT" && partes.length === 3 && partes[1] === "productos") {
             const id = Number(partes[2]);

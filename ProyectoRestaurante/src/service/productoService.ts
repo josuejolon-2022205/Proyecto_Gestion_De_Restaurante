@@ -17,14 +17,8 @@ export class ProductoService {
         return await this.repository.obtenerProductosPorCategoria(idCategoria);
     }
 
-    async guardarProducto(producto: Producto): Promise<void> {
-        const existe = await this.repository.obtenerProductoPorId(producto.idProducto);
-
-        if (existe) {
-            throw new Error("El ID de producto ya existe.");
-        }
-
-        await this.repository.guardarProducto(producto);
+    async guardarProducto(producto: Omit<Producto, "idProducto">): Promise<Producto> {
+        return await this.repository.guardarProducto(producto);
     }
 
     async actualizarProducto(producto: Producto): Promise<void> {
