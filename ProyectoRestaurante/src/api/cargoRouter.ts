@@ -35,28 +35,26 @@ export async function routerCargo(req: IncomingMessage, res: ServerResponse) {
     }
 
     if (metodo === "POST" && url === "/cargos") {
-
-      await routeHandler(res, async () => {
         const body = await ReadBody(req);
-        const cargo = JSON.parse(body);
-        await service.guardarCargo(cargo);
-        sendJson(res, 201, { mensaje: "Cargo agregado correctamente" });
-      });
-      return;
+        await routeHandler(res, async () => {
+            const c = JSON.parse(body);
+            const nuevo = await service.guardarCargo(c);
+            sendJson(res, 201, { mensaje: "Cargo agregado correctamente", cargo: nuevo });
+        });
+        return;
     }
 
     if (metodo === "PUT" && url.startsWith("/cargos/")) {
-
-      const id = Number(url.split("/")[2]);
-      await routeHandler(res, async () => {
-        const body = await ReadBody(req);
-        const cargo = JSON.parse(body);
-        cargo.id_cargo = id;
-        await service.actualizarCargo(cargo);
-        sendJson(res, 200, { mensaje: "Cargo actualizado" });
-      });
-      return;
-    }
+        const id = Number(url.split("/")[2]);
+        await routeHandler(res, async () => {
+            const body = await ReadBody(req);
+            const cargo = JSON.parse(body);
+            cargo.idCargo = id;        
+            await service.actualizarCargo(cargo);
+            sendJson(res, 200, { mensaje: "Cargo actualizado" });
+        });
+        return;
+}
 
     if (metodo === "DELETE" && url.startsWith("/cargos/")) {
 
