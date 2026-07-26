@@ -1,5 +1,8 @@
 import { CategoriaProductoRepository } from "../data/categoriaProductoRepository";
 import { CategoriaProducto } from "../models/CategoriaProducto";
+import { categoriaProductoSchema, categoriaProductoUpdateSchema } from "../validations/categoriaProductoValidator";
+import { validate } from "../validations/validate";
+import { NotFoundError } from "../errors/NotFoundError";
 
 export class CategoriaProductoService {
 
@@ -13,15 +16,17 @@ export class CategoriaProductoService {
         return await this.repository.obtenerCategoriaPorId(id);
     }
 
-    async guardarCategoria(categoria: Omit<CategoriaProducto, "idCategoriaProducto">): Promise<CategoriaProducto> {
-        return await this.repository.guardarCategoria(categoria);
+    async guardarCategoria(categoria: unknown): Promise<CategoriaProducto> {
+        const datosValidados = validate(categoriaProductoSchema, categoria);
+        return await this.repository.guardarCategoria(datosValidados);
     }
-    
-    async actualizarCategoria(categoria: CategoriaProducto): Promise<void> {
-        const actualizado = await this.repository.actualizarCategoria(categoria);
+
+    async actualizarCategoria(categoria: unknown): Promise<void> {
+        const datosValidados = validate(categoriaProductoUpdateSchema, categoria);
+        const actualizado = await this.repository.actualizarCategoria(datosValidados as CategoriaProducto);
 
         if (!actualizado) {
-            throw new Error("La categoría no existe.");
+            throw new NotFoundError("La categoría no existe.");
         }
     }
 
@@ -29,7 +34,7 @@ export class CategoriaProductoService {
         const eliminado = await this.repository.eliminarCategoria(id);
 
         if (!eliminado) {
-            throw new Error("La categoría no existe.");
+            throw new NotFoundError("La categoría no existe.");
         }
     }
 }
