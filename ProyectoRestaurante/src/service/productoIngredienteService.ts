@@ -1,5 +1,8 @@
 import { ProductoIngredienteRepository } from "../data/productoIngredienteRepository";
 import { ProductoIngrediente } from "../models/productoIngrediente";
+import { productoIngredienteSchema, productoIngredienteUpdateSchema } from "../validations/productoIngredienteValidator";
+import { validate } from "../validations/validate";
+import { NotFoundError } from "../errors/NotFoundError";
 
 export class ProductoIngredienteService {
 
@@ -13,23 +16,17 @@ export class ProductoIngredienteService {
         return await this.repository.obtenerProductoIngredientePorId(id);
     }
 
-    async obtenerIngredientesPorProducto(idProducto: number): Promise<ProductoIngrediente[]> {
-        return await this.repository.obtenerIngredientesPorProducto(idProducto);
+    async guardarProductoIngrediente(pi: unknown): Promise<ProductoIngrediente> {
+        const datosValidados = validate(productoIngredienteSchema, pi);
+        return await this.repository.guardarProductoIngrediente(datosValidados);
     }
 
-    async obtenerProductosPorIngrediente(idIngrediente: number): Promise<ProductoIngrediente[]> {
-        return await this.repository.obtenerProductosPorIngrediente(idIngrediente);
-    }
-
-    async guardarProductoIngrediente(pi: Omit<ProductoIngrediente, "idProductoIngrediente">): Promise<ProductoIngrediente> {
-        return await this.repository.guardarProductoIngrediente(pi);
-    }
-
-    async actualizarProductoIngrediente(productoIngrediente: ProductoIngrediente): Promise<void> {
-        const actualizado = await this.repository.actualizarProductoIngrediente(productoIngrediente);
+    async actualizarProductoIngrediente(pi: unknown): Promise<void> {
+        const datosValidados = validate(productoIngredienteUpdateSchema, pi);
+        const actualizado = await this.repository.actualizarProductoIngrediente(datosValidados as ProductoIngrediente);
 
         if (!actualizado) {
-            throw new Error("El producto ingrediente no existe.");
+            throw new NotFoundError("El producto ingrediente no existe.");
         }
     }
 
@@ -37,7 +34,7 @@ export class ProductoIngredienteService {
         const eliminado = await this.repository.eliminarProductoIngrediente(id);
 
         if (!eliminado) {
-            throw new Error("El producto ingrediente no existe.");
+            throw new NotFoundError("El producto ingrediente no existe.");
         }
     }
 }
