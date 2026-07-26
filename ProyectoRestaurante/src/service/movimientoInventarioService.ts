@@ -17,16 +17,9 @@ export class MovimientoInventarioService {
         return await this.repository.obtenerMovimientosPorIngrediente(idIngrediente);
     }
 
-    async guardarMovimiento(movimiento: MovimientoInventario): Promise<void> {
-        const existe = await this.repository.obtenerMovimientoPorId(movimiento.idMovimiento);
-
-        if (existe) {
-            throw new Error("El ID de movimiento ya existe.");
-        }
-
-        await this.repository.guardarMovimiento(movimiento);
+    async guardarMovimiento(movimiento: Omit<MovimientoInventario, "idMovimiento">): Promise<MovimientoInventario> {
+        return await this.repository.guardarMovimiento(movimiento);
     }
-
     async actualizarMovimiento(movimiento: MovimientoInventario): Promise<void> {
         const actualizado = await this.repository.actualizarMovimiento(movimiento);
 

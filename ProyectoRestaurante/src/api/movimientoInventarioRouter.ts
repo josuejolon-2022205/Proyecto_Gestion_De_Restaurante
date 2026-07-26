@@ -34,11 +34,10 @@ export async function routerMovimientoInventario(req: IncomingMessage, res: Serv
 
         if (metodo === "POST" && url === "/movimientos") {
             const body = await ReadBody(req);
-
             await routeHandler(res, async () => {
                 const m = JSON.parse(body);
-                await service.guardarMovimiento(m);
-                sendJson(res, 201, { mensaje: "Movimiento registrado correctamente" });
+                const nuevo = await service.guardarMovimiento(m);
+                sendJson(res, 201, { mensaje: "Movimiento registrado correctamente", movimiento: nuevo });
             });
             return;
         }
