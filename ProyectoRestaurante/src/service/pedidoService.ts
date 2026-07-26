@@ -21,14 +21,8 @@ export class PedidoService {
         return await this.repository.obtenerPedidosPorMesa(idMesa);
     }
 
-    async guardarPedido(pedido: Pedido): Promise<void> {
-        const existe = await this.repository.obtenerPedidoPorId(pedido.idPedido);
-
-        if (existe) {
-            throw new Error("El ID de pedido ya existe.");
-        }
-
-        await this.repository.guardarPedido(pedido);
+    async guardarPedido(pedido: Omit<Pedido, "idPedido">): Promise<Pedido> {
+        return await this.repository.guardarPedido(pedido);
     }
 
     async actualizarPedido(pedido: Pedido): Promise<void> {

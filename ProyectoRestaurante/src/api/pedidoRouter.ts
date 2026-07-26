@@ -34,11 +34,10 @@ export async function routerPedido(req: IncomingMessage, res: ServerResponse) {
 
         if (metodo === "POST" && url === "/pedidos") {
             const body = await ReadBody(req);
-
             await routeHandler(res, async () => {
                 const p = JSON.parse(body);
-                await service.guardarPedido(p);
-                sendJson(res, 201, { mensaje: "Pedido agregado correctamente" });
+                const nuevo = await service.guardarPedido(p);
+                sendJson(res, 201, { mensaje: "Pedido agregado correctamente", pedido: nuevo });
             });
             return;
         }
