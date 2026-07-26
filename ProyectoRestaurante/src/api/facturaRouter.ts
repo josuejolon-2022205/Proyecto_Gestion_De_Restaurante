@@ -34,11 +34,10 @@ export async function routerFactura(req: IncomingMessage, res: ServerResponse) {
 
         if (metodo === "POST" && url === "/facturas") {
             const body = await ReadBody(req);
-
             await routeHandler(res, async () => {
                 const f = JSON.parse(body);
-                await service.guardarFactura(f);
-                sendJson(res, 201, { mensaje: "Factura generada correctamente" });
+                const nuevo = await service.guardarFactura(f);
+                sendJson(res, 201, { mensaje: "Factura generada correctamente", factura: nuevo });
             });
             return;
         }

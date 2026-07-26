@@ -13,20 +13,8 @@ export class FacturaService {
         return await this.repository.obtenerFacturaPorId(id);
     }
 
-    async guardarFactura(factura: Factura): Promise<void> {
-        const existe = await this.repository.obtenerFacturaPorId(factura.idFactura);
-
-        if (existe) {
-            throw new Error("El ID de factura ya existe.");
-        }
-
-        const numeroExiste = await this.repository.obtenerFacturaPorNumero(factura.numeroFactura);
-
-        if (numeroExiste) {
-            throw new Error("El número de factura ya existe.");
-        }
-
-        await this.repository.guardarFactura(factura);
+    async guardarFactura(factura: Omit<Factura, "idFactura">): Promise<Factura> {
+        return await this.repository.guardarFactura(factura);
     }
 
     async actualizarFactura(factura: Factura): Promise<void> {
