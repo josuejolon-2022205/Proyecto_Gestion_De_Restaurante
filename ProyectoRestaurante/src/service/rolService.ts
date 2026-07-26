@@ -1,5 +1,8 @@
 import { RolRepository } from "../data/RolRepository";
 import { Rol } from "../models/Rol";
+import { rolSchema, rolUpdateSchema } from "../validations/rolValidator";
+import { validate } from "../validations/validate";
+import { NotFoundError } from "../errors/NotFoundError";
 
 export class RolService {
 
@@ -13,21 +16,25 @@ export class RolService {
         return await this.repository.obtenerRolPorId(id);
     }
 
-    async guardarRol(rol: Omit<Rol, "idRol">): Promise<Rol> {
-        return await this.repository.guardarRol(rol);
+    async guardarRol(rol: unknown): Promise<Rol> {
+        const datosValidados = validate(rolSchema, rol);
+        return await this.repository.guardarRol(datosValidados);
     }
 
-    async actualizarRol(rol: Rol): Promise<void> {
-        const actualizado = await this.repository.actualizarRol(rol);
+    async actualizarRol(rol: unknown): Promise<void> {
+        const datosValidados = validate(rolUpdateSchema, rol);
+        const actualizado = await this.repository.actualizarRol(datosValidados as Rol);
+
         if (!actualizado) {
-            throw new Error("El rol no existe.");
+            throw new NotFoundError("El rol no existe.");
         }
     }
 
     async eliminarRol(id: number): Promise<void> {
         const eliminado = await this.repository.eliminarRol(id);
+
         if (!eliminado) {
-            throw new Error("El rol no existe.");
+            throw new NotFoundError("El rol no existe.");
         }
     }
 }
