@@ -1,5 +1,8 @@
 import { ReservaRepository } from "../data/reservaRepository";
 import { Reserva } from "../models/Reserva";
+import { reservaSchema, reservaUpdateSchema } from "../validations/reservaValidator";
+import { validate } from "../validations/validate";
+import { NotFoundError } from "../errors/NotFoundError";
 
 export class ReservaService {
 
@@ -13,23 +16,17 @@ export class ReservaService {
         return await this.repository.obtenerReservaPorId(id);
     }
 
-    async obtenerReservasPorCliente(idCliente: number): Promise<Reserva[]> {
-        return await this.repository.obtenerReservasPorCliente(idCliente);
+    async guardarReserva(reserva: unknown): Promise<Reserva> {
+        const datosValidados = validate(reservaSchema, reserva);
+        return await this.repository.guardarReserva(datosValidados);
     }
 
-    async obtenerReservasPorMesa(idMesa: number): Promise<Reserva[]> {
-        return await this.repository.obtenerReservasPorMesa(idMesa);
-    }
-
-    async guardarReserva(reserva: Omit<Reserva, "idReserva">): Promise<Reserva> {
-        return await this.repository.guardarReserva(reserva);
-    }
-
-    async actualizarReserva(reserva: Reserva): Promise<void> {
-        const actualizado = await this.repository.actualizarReserva(reserva);
+    async actualizarReserva(reserva: unknown): Promise<void> {
+        const datosValidados = validate(reservaUpdateSchema, reserva);
+        const actualizado = await this.repository.actualizarReserva(datosValidados as Reserva);
 
         if (!actualizado) {
-            throw new Error("La reserva no existe.");
+            throw new NotFoundError("La reserva no existe.");
         }
     }
 
@@ -37,7 +34,7 @@ export class ReservaService {
         const eliminado = await this.repository.eliminarReserva(id);
 
         if (!eliminado) {
-            throw new Error("La reserva no existe.");
+            throw new NotFoundError("La reserva no existe.");
         }
     }
 }
