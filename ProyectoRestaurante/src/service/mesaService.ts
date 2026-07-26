@@ -1,5 +1,8 @@
 import { MesaRepository } from "../data/mesaRepository";
 import { Mesa } from "../models/Mesa";
+import { mesaSchema, mesaUpdateSchema } from "../validations/mesaValidator";
+import { validate } from "../validations/validate";
+import { NotFoundError } from "../errors/NotFoundError";
 
 export class MesaService {
 
@@ -13,19 +16,17 @@ export class MesaService {
         return await this.repository.obtenerMesaPorId(id);
     }
 
-    async guardarMesa(mesa: Omit<Mesa, "idMesa">): Promise<Mesa> {
-        const numeroExiste = await this.repository.obtenerMesaPorNumero(mesa.numeroMesa);
-        if (numeroExiste) {
-            throw new Error("El número de mesa ya existe.");
-        }
-        return await this.repository.guardarMesa(mesa);
+    async guardarMesa(mesa: unknown): Promise<Mesa> {
+        const datosValidados = validate(mesaSchema, mesa);
+        return await this.repository.guardarMesa(datosValidados);
     }
 
-    async actualizarMesa(mesa: Mesa): Promise<void> {
-        const actualizado = await this.repository.actualizarMesa(mesa);
+    async actualizarMesa(mesa: unknown): Promise<void> {
+        const datosValidados = validate(mesaUpdateSchema, mesa);
+        const actualizado = await this.repository.actualizarMesa(datosValidados as unknown as Mesa);
 
-        if(!actualizado) {
-            throw new Error("La mesa no existe.");
+        if (!actualizado) {
+            throw new NotFoundError("La mesa no existe.");
         }
     }
 
@@ -33,7 +34,7 @@ export class MesaService {
         const eliminado = await this.repository.eliminarMesa(id);
 
         if (!eliminado) {
-            throw new Error("La mesa no existe.");
+            throw new NotFoundError("La mesa no existe.");
         }
     }
 }
