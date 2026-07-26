@@ -1,5 +1,8 @@
 import { EmpleadoRepository } from "../data/empleadoRepository";
 import { Empleado } from "../models/Empleado";
+import { empleadoSchema, empleadoUpdateSchema } from "../validations/empleadoValidator";
+import { validate } from "../validations/validate";
+import { NotFoundError } from "../errors/NotFoundError";
 
 export class EmpleadoService {
 
@@ -13,16 +16,17 @@ export class EmpleadoService {
         return await this.repository.obtenerEmpleadoPorId(id);
     }
 
-    async guardarEmpleado(empleado: Omit<Empleado, "idEmpleado">): Promise<Empleado> {
-        return await this.repository.guardarEmpleado(empleado);
+    async guardarEmpleado(empleado: unknown): Promise<Empleado> {
+        const datosValidados = validate(empleadoSchema, empleado);
+        return await this.repository.guardarEmpleado(datosValidados);
     }
 
-
-    async actualizarEmpleado(empleado: Empleado): Promise<void> {
-        const actualizado = await this.repository.actualizarEmpleado(empleado);
+    async actualizarEmpleado(empleado: unknown): Promise<void> {
+        const datosValidados = validate(empleadoUpdateSchema, empleado);
+        const actualizado = await this.repository.actualizarEmpleado(datosValidados as Empleado);
 
         if (!actualizado) {
-            throw new Error("El empleado no existe.");
+            throw new NotFoundError("El empleado no existe.");
         }
     }
 
@@ -30,7 +34,7 @@ export class EmpleadoService {
         const eliminado = await this.repository.eliminarEmpleado(id);
 
         if (!eliminado) {
-            throw new Error("El empleado no existe.");
+            throw new NotFoundError("El empleado no existe.");
         }
     }
 }
