@@ -32,16 +32,15 @@ export async function routerUsuario(req: IncomingMessage, res: ServerResponse) {
             return;
         }
 
-        if (metodo === "POST" && url === "/usuarios") {
-            const body = await ReadBody(req);
-
-            await routeHandler(res, async () => {
-                const u = JSON.parse(body);
-                await service.guardarUsuario(u);
-                sendJson(res, 201, { mensaje: "Usuario agregado correctamente" });
-            });
-            return;
-        }
+    if (metodo === "POST" && url === "/usuarios") {
+        const body = await ReadBody(req);
+        await routeHandler(res, async () => {
+            const u = JSON.parse(body);
+            const nuevo = await service.guardarUsuario(u);
+            sendJson(res, 201, { mensaje: "Usuario agregado correctamente", usuario: nuevo });
+        });
+        return;
+    }
 
         if (metodo === "PUT" && partes.length === 3 && partes[1] === "usuarios") {
             const id = Number(partes[2]);

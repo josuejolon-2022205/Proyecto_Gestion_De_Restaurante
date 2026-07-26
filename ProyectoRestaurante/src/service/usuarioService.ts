@@ -13,22 +13,13 @@ export class UsuarioService {
         return await this.repository.obtenerUsuarioPorId(id);
     }
 
-    async guardarUsuario(usuario: Usuario): Promise<void> {
-        const existe = await this.repository.obtenerUsuarioPorId(usuario.idUsuario);
-
-        if (existe) {
-            throw new Error("El ID de usuario ya existe.");
-        }
-
+    async guardarUsuario(usuario: Omit<Usuario, "idUsuario">): Promise<Usuario> {
         const correoExiste = await this.repository.obtenerUsuarioPorCorreo(usuario.correo);
-
         if (correoExiste) {
             throw new Error("El correo ya está registrado.");
         }
-
-        await this.repository.guardarUsuario(usuario);
+        return await this.repository.guardarUsuario(usuario);
     }
-
     async actualizarUsuario(usuario: Usuario): Promise<void> {
         const actualizado = await this.repository.actualizarUsuario(usuario);
 
