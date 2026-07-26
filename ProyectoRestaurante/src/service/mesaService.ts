@@ -13,20 +13,12 @@ export class MesaService {
         return await this.repository.obtenerMesaPorId(id);
     }
 
-    async guardarMesa(mesa: Mesa): Promise<void> {
-        const existe = await this.repository.obtenerMesaPorId(mesa.idMesa);
-
-        if(existe) {
-            throw new Error("El ID de mesa ya existe.");
-        }
-
+    async guardarMesa(mesa: Omit<Mesa, "idMesa">): Promise<Mesa> {
         const numeroExiste = await this.repository.obtenerMesaPorNumero(mesa.numeroMesa);
-
-        if(numeroExiste) {
+        if (numeroExiste) {
             throw new Error("El número de mesa ya existe.");
         }
-
-        await this.repository.guardarMesa(mesa);
+        return await this.repository.guardarMesa(mesa);
     }
 
     async actualizarMesa(mesa: Mesa): Promise<void> {

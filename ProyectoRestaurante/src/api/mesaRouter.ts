@@ -34,11 +34,10 @@ export async function routerMesa(req: IncomingMessage, res: ServerResponse) {
 
         if (metodo === "POST" && url === "/mesas") {
             const body = await ReadBody(req);
-
             await routeHandler(res, async () => {
                 const m = JSON.parse(body);
-                await service.guardarMesa(m);
-                sendJson(res, 201, { mensaje: "Mesa agregada correctamente" });
+                const nuevo = await service.guardarMesa(m);
+                sendJson(res, 201, { mensaje: "Mesa agregada correctamente", mesa: nuevo });
             });
             return;
         }
