@@ -1,5 +1,9 @@
 import { ProveedorRepository } from "../data/proveedorRepository";
 import { Proveedor } from "../models/Proveedor";
+import { proveedorSchema, proveedorUpdateSchema } from "../validations/proveedorValidator";
+import { validate } from "../validations/validate";
+import { NotFoundError } from "../errors/NotFoundError";
+import { ConflictError } from "../errors/ConflictError";
 
 export class ProveedorService {
 
@@ -13,18 +17,23 @@ export class ProveedorService {
         return await this.repository.obtenerProveedorPorId(id);
     }
 
-    async guardarProveedor(proveedor: Omit<Proveedor, "idProveedor">): Promise<Proveedor> {
-        const correoExiste = await this.repository.obtenerProveedorPorCorreo(proveedor.correoProveedor);
+    async guardarProveedor(proveedor: unknown): Promise<Proveedor> {
+        const datosValidados = validate(proveedorSchema, proveedor);
+        
+        const correoExiste = await this.repository.obtenerProveedorPorCorreo(datosValidados.correoProveedor);
         if (correoExiste) {
-            throw new Error("El correo ya está registrado.");
+            throw new ConflictError("El correo ya está registrado.");
         }
-        return await this.repository.guardarProveedor(proveedor);
+        
+        return await this.repository.guardarProveedor(datosValidados);
     }
-    async actualizarProveedor(proveedor: Proveedor): Promise<void> {
-        const actualizado = await this.repository.actualizarProveedor(proveedor);
+
+    async actualizarProveedor(proveedor: unknown): Promise<void> {
+        const datosValidados = validate(proveedorUpdateSchema, proveedor);
+        const actualizado = await this.repository.actualizarProveedor(datosValidados as Proveedor);
 
         if (!actualizado) {
-            throw new Error("El proveedor no existe.");
+            throw new NotFoundError("El proveedor no existe.");
         }
     }
 
@@ -32,7 +41,7 @@ export class ProveedorService {
         const eliminado = await this.repository.eliminarProveedor(id);
 
         if (!eliminado) {
-            throw new Error("El proveedor no existe.");
+            throw new NotFoundError("El proveedor no existe.");
         }
     }
 }
