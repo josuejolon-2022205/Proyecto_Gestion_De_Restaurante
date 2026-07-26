@@ -34,11 +34,10 @@ export async function routerPago(req: IncomingMessage, res: ServerResponse) {
 
         if (metodo === "POST" && url === "/pagos") {
             const body = await ReadBody(req);
-
             await routeHandler(res, async () => {
                 const p = JSON.parse(body);
-                await service.guardarPago(p);
-                sendJson(res, 201, { mensaje: "Pago registrado correctamente" });
+                const nuevo = await service.guardarPago(p);
+                sendJson(res, 201, { mensaje: "Pago registrado correctamente", pago: nuevo });
             });
             return;
         }

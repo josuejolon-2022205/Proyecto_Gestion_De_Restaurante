@@ -17,14 +17,8 @@ export class PagoService {
         return await this.repository.obtenerPagosPorPedido(idPedido);
     }
 
-    async guardarPago(pago: Pago): Promise<void> {
-        const existe = await this.repository.obtenerPagoPorId(pago.idPago);
-
-        if (existe) {
-            throw new Error("El ID de pago ya existe.");
-        }
-
-        await this.repository.guardarPago(pago);
+    async guardarPago(pago: Omit<Pago, "idPago">): Promise<Pago> {
+        return await this.repository.guardarPago(pago);
     }
 
     async actualizarPago(pago: Pago): Promise<void> {
