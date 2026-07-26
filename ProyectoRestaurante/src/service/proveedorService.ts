@@ -13,22 +13,13 @@ export class ProveedorService {
         return await this.repository.obtenerProveedorPorId(id);
     }
 
-    async guardarProveedor(proveedor: Proveedor): Promise<void> {
-        const existe = await this.repository.obtenerProveedorPorId(proveedor.idProveedor);
-
-        if (existe) {
-            throw new Error("El ID de proveedor ya existe.");
-        }
-
+    async guardarProveedor(proveedor: Omit<Proveedor, "idProveedor">): Promise<Proveedor> {
         const correoExiste = await this.repository.obtenerProveedorPorCorreo(proveedor.correoProveedor);
-
         if (correoExiste) {
             throw new Error("El correo ya está registrado.");
         }
-
-        await this.repository.guardarProveedor(proveedor);
+        return await this.repository.guardarProveedor(proveedor);
     }
-
     async actualizarProveedor(proveedor: Proveedor): Promise<void> {
         const actualizado = await this.repository.actualizarProveedor(proveedor);
 

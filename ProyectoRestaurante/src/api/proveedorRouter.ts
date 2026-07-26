@@ -34,11 +34,10 @@ export async function routerProveedor(req: IncomingMessage, res: ServerResponse)
 
         if (metodo === "POST" && url === "/proveedores") {
             const body = await ReadBody(req);
-
             await routeHandler(res, async () => {
                 const p = JSON.parse(body);
-                await service.guardarProveedor(p);
-                sendJson(res, 201, { mensaje: "Proveedor agregado correctamente" });
+                const nuevo = await service.guardarProveedor(p);
+                sendJson(res, 201, { mensaje: "Proveedor agregado correctamente", proveedor: nuevo });
             });
             return;
         }
