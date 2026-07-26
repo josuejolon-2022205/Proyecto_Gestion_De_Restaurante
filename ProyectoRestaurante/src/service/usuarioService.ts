@@ -1,5 +1,9 @@
 import { UsuarioRepository } from "../data/usuarioRepository";
 import { Usuario } from "../models/Usuario";
+import { usuarioSchema, usuarioUpdateSchema } from "../validations/usuarioValidator";
+import { validate } from "../validations/validate";
+import { NotFoundError } from "../errors/NotFoundError";
+import { ConflictError } from "../errors/ConflictError";
 
 export class UsuarioService {
 
@@ -13,18 +17,23 @@ export class UsuarioService {
         return await this.repository.obtenerUsuarioPorId(id);
     }
 
-    async guardarUsuario(usuario: Omit<Usuario, "idUsuario">): Promise<Usuario> {
-        const correoExiste = await this.repository.obtenerUsuarioPorCorreo(usuario.correo);
+    async guardarUsuario(usuario: unknown): Promise<Usuario> {
+        const datosValidados = validate(usuarioSchema, usuario);
+        
+        const correoExiste = await this.repository.obtenerUsuarioPorCorreo(datosValidados.correo);
         if (correoExiste) {
-            throw new Error("El correo ya está registrado.");
+            throw new ConflictError("El correo ya está registrado.");
         }
-        return await this.repository.guardarUsuario(usuario);
+        
+        return await this.repository.guardarUsuario(datosValidados);
     }
-    async actualizarUsuario(usuario: Usuario): Promise<void> {
-        const actualizado = await this.repository.actualizarUsuario(usuario);
+
+    async actualizarUsuario(usuario: unknown): Promise<void> {
+        const datosValidados = validate(usuarioUpdateSchema, usuario);
+        const actualizado = await this.repository.actualizarUsuario(datosValidados as Usuario);
 
         if (!actualizado) {
-            throw new Error("El usuario no existe.");
+            throw new NotFoundError("El usuario no existe.");
         }
     }
 
@@ -32,7 +41,7 @@ export class UsuarioService {
         const eliminado = await this.repository.eliminarUsuario(id);
 
         if (!eliminado) {
-            throw new Error("El usuario no existe.");
+            throw new NotFoundError("El usuario no existe.");
         }
     }
 }
