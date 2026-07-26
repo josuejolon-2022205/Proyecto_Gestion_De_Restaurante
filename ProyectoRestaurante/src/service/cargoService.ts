@@ -1,5 +1,8 @@
 import { CargoRepository } from "../data/cargoRepository";
 import { Cargo } from "../models/Cargo";
+import { cargoSchema, cargoUpdateSchema } from "../validations/cargoValidator";
+import { validate } from "../validations/validate";
+import { NotFoundError } from "../errors/NotFoundError";
 
 export class CargoService {
 
@@ -13,21 +16,25 @@ export class CargoService {
         return await this.repository.obtenerCargoPorId(id);
     }
 
-    async guardarCargo(cargo: Omit<Cargo, "idCargo">): Promise<Cargo> {
-        return await this.repository.guardarCargo(cargo);
+    async guardarCargo(cargo: unknown): Promise<Cargo> {
+        const datosValidados = validate(cargoSchema, cargo);
+        return await this.repository.guardarCargo(datosValidados);
     }
 
-    async actualizarCargo(cargo: Cargo): Promise<void> {
-        const actualizado = await this.repository.actualizarCargo(cargo);
+    async actualizarCargo(cargo: unknown): Promise<void> {
+        const datosValidados = validate(cargoUpdateSchema, cargo);
+        const actualizado = await this.repository.actualizarCargo(datosValidados as Cargo);
+        
         if (!actualizado) {
-            throw new Error("El cargo no existe.");
+            throw new NotFoundError("El cargo no existe.");
         }
     }
 
     async eliminarCargo(id: number): Promise<void> {
         const eliminado = await this.repository.eliminarCargo(id);
+        
         if (!eliminado) {
-            throw new Error("El cargo no existe.");
+            throw new NotFoundError("El cargo no existe.");
         }
     }
 }
