@@ -13,19 +13,12 @@ export class RolService {
         return await this.repository.obtenerRolPorId(id);
     }
 
-    async guardarRol(rol: Rol): Promise<void> {
-        const existe = await this.repository.obtenerRolPorId(rol.idRol);
-
-        if (existe) {
-            throw new Error("El ID de rol ya existe.");
-        }
-
-        await this.repository.guardarRol(rol);
+    async guardarRol(rol: Omit<Rol, "idRol">): Promise<Rol> {
+        return await this.repository.guardarRol(rol);
     }
 
     async actualizarRol(rol: Rol): Promise<void> {
         const actualizado = await this.repository.actualizarRol(rol);
-
         if (!actualizado) {
             throw new Error("El rol no existe.");
         }
@@ -33,7 +26,6 @@ export class RolService {
 
     async eliminarRol(id: number): Promise<void> {
         const eliminado = await this.repository.eliminarRol(id);
-
         if (!eliminado) {
             throw new Error("El rol no existe.");
         }

@@ -34,11 +34,10 @@ export async function routerRol(req: IncomingMessage, res: ServerResponse) {
 
         if (metodo === "POST" && url === "/roles") {
             const body = await ReadBody(req);
-
             await routeHandler(res, async () => {
                 const r = JSON.parse(body);
-                await service.guardarRol(r);
-                sendJson(res, 201, { mensaje: "Rol agregado correctamente" });
+                const nuevo = await service.guardarRol(r);
+                sendJson(res, 201, { mensaje: "Rol agregado correctamente", rol: nuevo });
             });
             return;
         }
