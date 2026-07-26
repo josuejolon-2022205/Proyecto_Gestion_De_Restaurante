@@ -1,5 +1,7 @@
 import { DetallePedidoRepository } from "../data/detallePedidoRepository";
 import { DetallePedido } from "../models/DetallePedido";
+import { detallePedidoSchema } from "../validations/detallePedidoValidator";
+import { validate } from "../validations/validate";
 
 export class DetallePedidoService {
 
@@ -18,11 +20,13 @@ export class DetallePedidoService {
     }
 
     async guardarDetalle(detalle: Omit<DetallePedido, "idDetallePedido">): Promise<DetallePedido> {
-        return await this.repository.guardarDetalle(detalle);
+        const datosValidados = validate(detallePedidoSchema, detalle);
+        return await this.repository.guardarDetalle(datosValidados);
     }
 
     async actualizarDetalle(detalle: DetallePedido): Promise<void> {
-        const actualizado = await this.repository.actualizarDetalle(detalle);
+        const datosValidados = validate(detallePedidoSchema, detalle);
+        const actualizado = await this.repository.actualizarDetalle(datosValidados as DetallePedido);
 
         if (!actualizado) {
             throw new Error("El detalle no existe.");
