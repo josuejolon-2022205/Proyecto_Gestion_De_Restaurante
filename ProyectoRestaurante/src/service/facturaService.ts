@@ -1,5 +1,7 @@
 import { FacturaRepository } from "../data/facturaRepository";
 import { Factura } from "../models/Factura";
+import { facturaSchema } from "../validations/facturaValidator";
+import { validate } from "../validations/validate";
 
 export class FacturaService {
 
@@ -14,11 +16,14 @@ export class FacturaService {
     }
 
     async guardarFactura(factura: Omit<Factura, "idFactura">): Promise<Factura> {
-        return await this.repository.guardarFactura(factura);
+        const datosValidados = validate(facturaSchema, factura);
+        
+        return await this.repository.guardarFactura(datosValidados);
     }
 
     async actualizarFactura(factura: Factura): Promise<void> {
-        const actualizado = await this.repository.actualizarFactura(factura);
+        const datosValidados = validate(facturaSchema, factura);
+        const actualizado = await this.repository.actualizarFactura(datosValidados as Factura);
 
         if (!actualizado) {
             throw new Error("La factura no existe.");
