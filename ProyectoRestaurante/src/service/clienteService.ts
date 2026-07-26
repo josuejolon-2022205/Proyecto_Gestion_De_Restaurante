@@ -1,5 +1,8 @@
 import { ClienteRepository } from "../data/clienteRepository";
+import { NotFoundError } from "../errors/indexErrors";
 import { Cliente } from "../models/Cliente";
+import { clienteSchema, clienteUpdateSchema } from "../validations/clienteValidator";
+import { validate } from "../validations/validate";
 
 export class ClienteService {
 
@@ -14,26 +17,29 @@ export class ClienteService {
     }
 
     async guardarCliente(cliente: Omit<Cliente, "idCliente">): Promise<Cliente> {
-        const correoExiste = await this.repository.obtenerClientePorCorreo(cliente.correoCliente);
+        const datosValidados = validate(clienteSchema, cliente);
+
+        const correoExiste = await this.repository.obtenerClientePorCorreo(datosValidados.correoCliente);
         if (correoExiste) {
             throw new Error("El correo ya está registrado.");
         }
-        return await this.repository.guardarCliente(cliente);
+        return await this.repository.guardarCliente(datosValidados);
     }
 
-    async actualizarCliente(cliente: Cliente): Promise<void> {
-        const actualizado = await this.repository.actualizarCliente(cliente);
+    async actualizarCliente(cliente: unknown): Promise<void> {
+            const datosValidados = validate(clienteUpdateSchema, cliente);
+            const actualizado = await this.repository.actualizarCliente(datosValidados as Cliente);
 
-        if(!actualizado) {
-            throw new Error("El cliente no existe.");
+            if(!actualizado) {
+                throw new NotFoundError("El cliente no existe.");
+            }
         }
-    }
 
     async eliminarCliente(id: number): Promise<void> {
         const eliminado = await this.repository.eliminarCliente(id);
 
         if(!eliminado) {
-            throw new Error("El cliente no existe.");
+            throw new NotFoundError("El cliente no existe.");
         }
     }
 }
