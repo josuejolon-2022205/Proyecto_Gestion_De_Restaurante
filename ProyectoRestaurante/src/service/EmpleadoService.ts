@@ -13,15 +13,10 @@ export class EmpleadoService {
         return await this.repository.obtenerEmpleadoPorId(id);
     }
 
-    async guardarEmpleado(empleado: Empleado): Promise<void> {
-        const existe = await this.repository.obtenerEmpleadoPorId(empleado.idEmpleado);
-
-        if (existe) {
-            throw new Error("El ID de empleado ya existe.");
-        }
-
-        await this.repository.guardarEmpleado(empleado);
+    async guardarEmpleado(empleado: Omit<Empleado, "idEmpleado">): Promise<Empleado> {
+        return await this.repository.guardarEmpleado(empleado);
     }
+
 
     async actualizarEmpleado(empleado: Empleado): Promise<void> {
         const actualizado = await this.repository.actualizarEmpleado(empleado);

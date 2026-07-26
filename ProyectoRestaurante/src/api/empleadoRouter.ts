@@ -34,11 +34,10 @@ export async function routerEmpleado(req: IncomingMessage, res: ServerResponse) 
 
         if (metodo === "POST" && url === "/empleados") {
             const body = await ReadBody(req);
-
             await routeHandler(res, async () => {
                 const e = JSON.parse(body);
-                await service.guardarEmpleado(e);
-                sendJson(res, 201, { mensaje: "Empleado agregado correctamente" });
+                const nuevo = await service.guardarEmpleado(e);
+                sendJson(res, 201, { mensaje: "Empleado agregado correctamente", empleado: nuevo });
             });
             return;
         }
