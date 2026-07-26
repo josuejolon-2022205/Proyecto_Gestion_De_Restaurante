@@ -1,49 +1,54 @@
 import { Rol } from "../models/Rol";
-import { withTryCatch } from "../utils/withTryCatch";
-import { conexion } from "../config/database";
 import { Roles } from "../enums/Roles";
+import { withTryCatch, withTryCatchThrow } from "../utils/withTryCatch";
+import { conexion } from "../config/database";
 
 export class RolRepository {
 
     private async _obtenerRoles(): Promise<Rol[]> {
-        const result = await conexion.query("SELECT * FROM rol");
+        const result = await conexion.query('select * from "rol"');
         return result.rows;
     }
 
     private async _obtenerRolPorId(id: number): Promise<Rol | undefined> {
-        const result = await conexion.query("SELECT * FROM rol WHERE idRol = $1", [id]);
+        const result = await conexion.query('select * from "rol" where "idRol" = $1', [id]);
         return result.rows[0];
     }
 
     private async _obtenerRolPorNombre(nombre: string): Promise<Rol | undefined> {
-        const result = await conexion.query("SELECT * FROM rol WHERE nombre = $1", [nombre]);
+        const result = await conexion.query('select * from "rol" where "nombre" = $1', [nombre]);
         return result.rows[0];
     }
 
-    private async _guardarRol(rol: Rol): Promise<void> {
-        await conexion.query(
-            "INSERT INTO rol (idRol, nombre, descripcion, roles) VALUES ($1, $2, $3, $4)",
-            [rol.idRol, rol.nombre, rol.descripcion, rol.idRol === 1 ? Roles.ADMIN : Roles.USER]
+    private async _guardarRol(rol: Omit<Rol, "idRol">): Promise<Rol> {
+        const result = await conexion.query(
+            'insert into "rol" ("nombre", "descripcion", "roles") values ($1, $2, $3) returning "idRol"',
+            [rol.nombre, rol.descripcion, rol.roles]
         );
+        if (!result.rows[0]) {
+            throw new Error("No se pudo obtener el id del rol insertado");
+        }
+        return { ...rol, idRol: result.rows[0].idRol };
     }
 
     private async _actualizarRol(rolActualizado: Rol): Promise<boolean> {
         const result = await conexion.query(
-            "UPDATE rol SET nombre = $1, descripcion = $2, roles = $3 WHERE idRol = $4",
-            [rolActualizado.nombre, rolActualizado.descripcion, rolActualizado.idRol === 1 ? Roles.ADMIN : Roles.USER, rolActualizado.idRol]
+            'update "rol" set "nombre" = $1, "descripcion" = $2, "roles" = $3 where "idRol" = $4',
+            [rolActualizado.nombre, rolActualizado.descripcion, rolActualizado.roles, rolActualizado.idRol]
         );
         return result.rowCount !== null && result.rowCount > 0;
     }
 
     private async _eliminarRol(id: number): Promise<boolean> {
-        const result = await conexion.query("DELETE FROM rol WHERE idRol = $1", [id]);
+        const result = await conexion.query('delete from "rol" where "idRol" = $1', [id]);
         return result.rowCount !== null && result.rowCount > 0;
     }
 
     obtenerRoles = withTryCatch(this._obtenerRoles.bind(this), [], "Error al obtener roles.");
     obtenerRolPorId = withTryCatch(this._obtenerRolPorId.bind(this), undefined, "Error al buscar rol por ID.");
     obtenerRolPorNombre = withTryCatch(this._obtenerRolPorNombre.bind(this), undefined, "Error al buscar rol por nombre.");
-    guardarRol = withTryCatch(this._guardarRol.bind(this), undefined, "Error al guardar el rol.");
-    actualizarRol = withTryCatch(this._actualizarRol.bind(this), false, "Error al actualizar el rol.");
-    eliminarRol = withTryCatch(this._eliminarRol.bind(this), false, "Error al eliminar el rol.");
+
+    guardarRol = withTryCatchThrow(this._guardarRol.bind(this), "Error al guardar el rol.");
+    actualizarRol = withTryCatchThrow(this._actualizarRol.bind(this), "Error al actualizar el rol.");
+    eliminarRol = withTryCatchThrow(this._eliminarRol.bind(this), "Error al eliminar el rol.");
 }
