@@ -34,11 +34,10 @@ export async function routerProductoIngrediente(req: IncomingMessage, res: Serve
 
         if (metodo === "POST" && url === "/productoingredientes") {
             const body = await ReadBody(req);
-
             await routeHandler(res, async () => {
                 const pi = JSON.parse(body);
-                await service.guardarProductoIngrediente(pi);
-                sendJson(res, 201, { mensaje: "ProductoIngrediente agregado correctamente" });
+                const nuevo = await service.guardarProductoIngrediente(pi);
+                sendJson(res, 201, { mensaje: "ProductoIngrediente agregado correctamente", productoIngrediente: nuevo });
             });
             return;
         }
