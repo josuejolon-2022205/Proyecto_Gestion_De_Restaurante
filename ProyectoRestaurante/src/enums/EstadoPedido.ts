@@ -1,7 +1,5 @@
-export enum estadoPedido{
-    ENTREGADO = "ENTRAGADO",
+export enum estadoPedido {
     PREPARACION = "PREPARACION",
-    ENTRAGADO = "ENTRAGADO",
+    ENTREGADO = "ENTREGADO",
     CANCELADO = "CANCELADO",
-
 }
