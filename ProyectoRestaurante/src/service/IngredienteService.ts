@@ -13,14 +13,8 @@ export class IngredienteService {
         return await this.repository.obtenerIngredientePorId(id);
     }
 
-    async guardarIngrediente(ingrediente: Ingrediente): Promise<void> {
-        const existe = await this.repository.obtenerIngredientePorId(ingrediente.idIngrediente);
-
-        if (existe) {
-            throw new Error("El ID de ingrediente ya existe.");
-        }
-
-        await this.repository.guardarIngrediente(ingrediente);
+    async guardarIngrediente(ingrediente: Omit<Ingrediente, "idIngrediente">): Promise<Ingrediente> {
+        return await this.repository.guardarIngrediente(ingrediente);
     }
 
     async actualizarIngrediente(ingrediente: Ingrediente): Promise<void> {
