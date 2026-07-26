@@ -1,16 +1,29 @@
 import { z } from "zod";
 
-export const ingredienteSchema = z.object({
-    nombreIngrediente: z.string().min(2, "Mínimo 2 caracteres").max(100, "Máximo 100 caracteres"),
-    stockActual: z.number().min(0, "El stock no puede ser negativo").max(999999.99, "Stock excede el límite"),
-    stockMinimo: z.number().min(0, "El stock mínimo no puede ser negativo").max(999999.99, "Stock mínimo excede el límite"),
-    fkIdProveedor: z.number().int().positive("ID de proveedor inválido"),
-    
-}).refine((data) => data.stockMinimo <= data.stockActual, {
-    message: "El stock mínimo no puede ser mayor al stock actual",
-    path: ["stockMinimo"],
+const ingredienteBaseSchema = z.object({
+    nombreIngrediente: z.string().min(2).max(100),
+    stockActual: z.number().min(0).max(999999.99),
+    stockMinimo: z.number().min(0).max(999999.99),
+    fkIdProveedor: z.number().int().positive(),
 });
 
-export const ingredienteUpdateSchema = ingredienteSchema.partial().extend({
+export const ingredienteSchema = ingredienteBaseSchema.refine(
+    (data) => data.stockMinimo <= data.stockActual,
+    { message: "Stock mínimo no puede ser mayor al actual", path: ["stockMinimo"] }
+);
+
+export const ingredienteUpdateSchema = z.object({
     idIngrediente: z.number().int().positive("El ID debe ser positivo"),
-});
+    nombreIngrediente: z.string().min(2).max(100).optional(),
+    stockActual: z.number().min(0).max(999999.99).optional(),
+    stockMinimo: z.number().min(0).max(999999.99).optional(),
+    fkIdProveedor: z.number().int().positive().optional(),
+}).refine(
+    (data) => {
+        if (data.stockActual !== undefined && data.stockMinimo !== undefined) {
+            return data.stockMinimo <= data.stockActual;
+        }
+        return true;
+    },
+    { message: "Stock mínimo no puede ser mayor al actual", path: ["stockMinimo"] }
+);
