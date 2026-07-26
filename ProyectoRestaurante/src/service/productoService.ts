@@ -1,5 +1,8 @@
 import { ProductoRepository } from "../data/productoRepository";
 import { Producto } from "../models/Producto";
+import { productoSchema, productoUpdateSchema } from "../validations/productoValidator";
+import { validate } from "../validations/validate";
+import { NotFoundError } from "../errors/NotFoundError";
 
 export class ProductoService {
 
@@ -13,19 +16,17 @@ export class ProductoService {
         return await this.repository.obtenerProductoPorId(id);
     }
 
-    async obtenerProductosPorCategoria(idCategoria: number): Promise<Producto[]> {
-        return await this.repository.obtenerProductosPorCategoria(idCategoria);
+    async guardarProducto(producto: unknown): Promise<Producto> {
+        const datosValidados = validate(productoSchema, producto);
+        return await this.repository.guardarProducto(datosValidados);
     }
 
-    async guardarProducto(producto: Omit<Producto, "idProducto">): Promise<Producto> {
-        return await this.repository.guardarProducto(producto);
-    }
-
-    async actualizarProducto(producto: Producto): Promise<void> {
-        const actualizado = await this.repository.actualizarProducto(producto);
+    async actualizarProducto(producto: unknown): Promise<void> {
+        const datosValidados = validate(productoUpdateSchema, producto);
+        const actualizado = await this.repository.actualizarProducto(datosValidados as Producto);
 
         if (!actualizado) {
-            throw new Error("El producto no existe.");
+            throw new NotFoundError("El producto no existe.");
         }
     }
 
@@ -33,7 +34,7 @@ export class ProductoService {
         const eliminado = await this.repository.eliminarProducto(id);
 
         if (!eliminado) {
-            throw new Error("El producto no existe.");
+            throw new NotFoundError("El producto no existe.");
         }
     }
 }
