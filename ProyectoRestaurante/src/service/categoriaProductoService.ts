@@ -13,16 +13,10 @@ export class CategoriaProductoService {
         return await this.repository.obtenerCategoriaPorId(id);
     }
 
-    async guardarCategoria(categoria: CategoriaProducto): Promise<void> {
-        const existe = await this.repository.obtenerCategoriaPorId(categoria.idCategoriaProducto);
-
-        if (existe) {
-            throw new Error("El ID de categoría ya existe.");
-        }
-
-        await this.repository.guardarCategoria(categoria);
+    async guardarCategoria(categoria: Omit<CategoriaProducto, "idCategoriaProducto">): Promise<CategoriaProducto> {
+        return await this.repository.guardarCategoria(categoria);
     }
-
+    
     async actualizarCategoria(categoria: CategoriaProducto): Promise<void> {
         const actualizado = await this.repository.actualizarCategoria(categoria);
 

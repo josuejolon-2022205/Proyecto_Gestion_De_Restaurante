@@ -21,14 +21,14 @@ export async function routerCategoriaProducto(req: IncomingMessage, res: ServerR
 
         if (metodo === "POST" && url === "/categorias") {
             const body = await ReadBody(req);
-
             await routeHandler(res, async () => {
                 const c = JSON.parse(body);
-                await service.guardarCategoria(c);
-                sendJson(res, 201, { mensaje: "Categoria agregada correctamente" });
+                const nuevo = await service.guardarCategoria(c);
+                sendJson(res, 201, { mensaje: "Categoria agregada correctamente", categoria: nuevo });
             });
             return;
         }
+
 
         if (metodo === "DELETE" && partes.length === 3 && partes[1] === "categorias") {
             const id = Number(partes[2]);
