@@ -13,20 +13,12 @@ export class ClienteService {
         return await this.repository.obtenerClientePorId(id);
     }
 
-    async guardarCliente(cliente: Cliente): Promise<void> {
-        const existe = await this.repository.obtenerClientePorId(cliente.idCliente);
-
-        if(existe) {
-            throw new Error("El ID de cliente ya existe.");
-        }
-
+    async guardarCliente(cliente: Omit<Cliente, "idCliente">): Promise<Cliente> {
         const correoExiste = await this.repository.obtenerClientePorCorreo(cliente.correoCliente);
-
-        if(correoExiste) {
+        if (correoExiste) {
             throw new Error("El correo ya está registrado.");
         }
-
-        await this.repository.guardarCliente(cliente);
+        return await this.repository.guardarCliente(cliente);
     }
 
     async actualizarCliente(cliente: Cliente): Promise<void> {
