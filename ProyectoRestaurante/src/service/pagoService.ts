@@ -1,5 +1,8 @@
 import { PagoRepository } from "../data/pagoRepository";
 import { Pago } from "../models/Pago";
+import { pagoSchema, pagoUpdateSchema } from "../validations/pagoValidator";
+import { validate } from "../validations/validate";
+import { NotFoundError } from "../errors/NotFoundError";
 
 export class PagoService {
 
@@ -13,19 +16,17 @@ export class PagoService {
         return await this.repository.obtenerPagoPorId(id);
     }
 
-    async obtenerPagosPorPedido(idPedido: number): Promise<Pago[]> {
-        return await this.repository.obtenerPagosPorPedido(idPedido);
+    async guardarPago(pago: unknown): Promise<Pago> {
+        const datosValidados = validate(pagoSchema, pago);
+        return await this.repository.guardarPago(datosValidados);
     }
 
-    async guardarPago(pago: Omit<Pago, "idPago">): Promise<Pago> {
-        return await this.repository.guardarPago(pago);
-    }
-
-    async actualizarPago(pago: Pago): Promise<void> {
-        const actualizado = await this.repository.actualizarPago(pago);
+    async actualizarPago(pago: unknown): Promise<void> {
+        const datosValidados = validate(pagoUpdateSchema, pago);
+        const actualizado = await this.repository.actualizarPago(datosValidados as Pago);
 
         if (!actualizado) {
-            throw new Error("El pago no existe.");
+            throw new NotFoundError("El pago no existe.");
         }
     }
 
@@ -33,7 +34,7 @@ export class PagoService {
         const eliminado = await this.repository.eliminarPago(id);
 
         if (!eliminado) {
-            throw new Error("El pago no existe.");
+            throw new NotFoundError("El pago no existe.");
         }
     }
 }
