@@ -31,17 +31,17 @@ export async function clienteRouter(req: IncomingMessage, res: ServerResponse) {
             sendJson(res, 200, cliente);
             return;
         }
-
+        
         if (metodo === "POST" && url === "/clientes") {
             const body = await ReadBody(req);
-
             await routeHandler(res, async () => {
                 const c = JSON.parse(body);
-                await service.guardarCliente(c);
-                sendJson(res, 201, { mensaje: "Cliente agregado correctamente" });
+                const nuevo = await service.guardarCliente(c);
+                sendJson(res, 201, { mensaje: "Cliente agregado correctamente", cliente: nuevo });
             });
             return;
         }
+
 
         if (metodo === "PUT" && partes.length === 3 && partes[1] === "clientes") {
             const id = Number(partes[2]);

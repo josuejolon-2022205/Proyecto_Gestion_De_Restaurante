@@ -17,14 +17,8 @@ export class DetallePedidoService {
         return await this.repository.obtenerDetallesPorPedido(idPedido);
     }
 
-    async guardarDetalle(detalle: DetallePedido): Promise<void> {
-        const existe = await this.repository.obtenerDetallePorId(detalle.idDetallePedido);
-
-        if (existe) {
-            throw new Error("El ID de detalle ya existe.");
-        }
-
-        await this.repository.guardarDetalle(detalle);
+    async guardarDetalle(detalle: Omit<DetallePedido, "idDetallePedido">): Promise<DetallePedido> {
+        return await this.repository.guardarDetalle(detalle);
     }
 
     async actualizarDetalle(detalle: DetallePedido): Promise<void> {
