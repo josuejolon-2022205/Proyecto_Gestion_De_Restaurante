@@ -1,5 +1,7 @@
 import { IngredienteRepository } from "../data/ingredienteRepository";
 import { Ingrediente } from "../models/Ingrediente";
+import { ingredienteSchema } from "../validations/ingredienteValidator";
+import { validate } from "../validations/validate";
 
 export class IngredienteService {
 
@@ -14,11 +16,13 @@ export class IngredienteService {
     }
 
     async guardarIngrediente(ingrediente: Omit<Ingrediente, "idIngrediente">): Promise<Ingrediente> {
-        return await this.repository.guardarIngrediente(ingrediente);
+        const datosValidados = validate(ingredienteSchema, ingrediente);
+        return await this.repository.guardarIngrediente(datosValidados as Ingrediente);
     }
 
     async actualizarIngrediente(ingrediente: Ingrediente): Promise<void> {
-        const actualizado = await this.repository.actualizarIngrediente(ingrediente);
+        const datosValidados = validate(ingredienteSchema, ingrediente);
+        const actualizado = await this.repository.actualizarIngrediente(datosValidados as Ingrediente);
 
         if (!actualizado) {
             throw new Error("El ingrediente no existe.");
