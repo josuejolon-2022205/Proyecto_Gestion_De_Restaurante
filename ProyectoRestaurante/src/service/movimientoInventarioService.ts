@@ -1,5 +1,8 @@
 import { MovimientoInventarioRepository } from "../data/movimientoInventarioRepository";
 import { MovimientoInventario } from "../models/moviemientoInventario";
+import { movimientoInventarioSchema, movimientoInventarioUpdateSchema } from "../validations/movimientoInventarioValidator";
+import { validate } from "../validations/validate";
+import { NotFoundError } from "../errors/NotFoundError";
 
 export class MovimientoInventarioService {
 
@@ -13,18 +16,17 @@ export class MovimientoInventarioService {
         return await this.repository.obtenerMovimientoPorId(id);
     }
 
-    async obtenerMovimientosPorIngrediente(idIngrediente: number): Promise<MovimientoInventario[]> {
-        return await this.repository.obtenerMovimientosPorIngrediente(idIngrediente);
+    async guardarMovimiento(movimiento: unknown): Promise<MovimientoInventario> {
+        const datosValidados = validate(movimientoInventarioSchema, movimiento);
+        return await this.repository.guardarMovimiento(datosValidados as MovimientoInventario);
     }
 
-    async guardarMovimiento(movimiento: Omit<MovimientoInventario, "idMovimiento">): Promise<MovimientoInventario> {
-        return await this.repository.guardarMovimiento(movimiento);
-    }
-    async actualizarMovimiento(movimiento: MovimientoInventario): Promise<void> {
-        const actualizado = await this.repository.actualizarMovimiento(movimiento);
+    async actualizarMovimiento(movimiento: unknown): Promise<void> {
+        const datosValidados = validate(movimientoInventarioUpdateSchema, movimiento);
+        const actualizado = await this.repository.actualizarMovimiento(datosValidados as MovimientoInventario);
 
         if (!actualizado) {
-            throw new Error("El movimiento no existe.");
+            throw new NotFoundError("El movimiento no existe.");
         }
     }
 
@@ -32,7 +34,7 @@ export class MovimientoInventarioService {
         const eliminado = await this.repository.eliminarMovimiento(id);
 
         if (!eliminado) {
-            throw new Error("El movimiento no existe.");
+            throw new NotFoundError("El movimiento no existe.");
         }
     }
 }
