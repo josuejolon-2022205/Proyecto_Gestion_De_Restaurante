@@ -21,14 +21,8 @@ export class ReservaService {
         return await this.repository.obtenerReservasPorMesa(idMesa);
     }
 
-    async guardarReserva(reserva: Reserva): Promise<void> {
-        const existe = await this.repository.obtenerReservaPorId(reserva.idReserva);
-
-        if (existe) {
-            throw new Error("El ID de reserva ya existe.");
-        }
-
-        await this.repository.guardarReserva(reserva);
+    async guardarReserva(reserva: Omit<Reserva, "idReserva">): Promise<Reserva> {
+        return await this.repository.guardarReserva(reserva);
     }
 
     async actualizarReserva(reserva: Reserva): Promise<void> {

@@ -31,14 +31,13 @@ export async function routerReserva(req: IncomingMessage, res: ServerResponse) {
             sendJson(res, 200, reserva);
             return;
         }
-
+        
         if (metodo === "POST" && url === "/reservas") {
             const body = await ReadBody(req);
-
             await routeHandler(res, async () => {
                 const r = JSON.parse(body);
-                await service.guardarReserva(r);
-                sendJson(res, 201, { mensaje: "Reserva agregada correctamente" });
+                const nuevo = await service.guardarReserva(r);
+                sendJson(res, 201, { mensaje: "Reserva agregada correctamente", reserva: nuevo });
             });
             return;
         }
