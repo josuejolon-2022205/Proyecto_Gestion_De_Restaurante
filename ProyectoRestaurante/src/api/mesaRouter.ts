@@ -2,7 +2,8 @@ import { IncomingMessage, ServerResponse } from "http";
 import { MesaService } from "../service/mesaService";
 import { ReadBody } from "./readBody";
 import { sendJson } from "./sendJSON";
-import { routeHandler } from "../utils/routeHandler";
+import { handleError } from "../utils/errorHandler";
+import { NotFoundError } from "../errors/NotFoundError";
 
 const service = new MesaService();
 
@@ -15,7 +16,8 @@ export async function routerMesa(req: IncomingMessage, res: ServerResponse) {
 
     try {
         if (metodo === "GET" && url === "/mesas") {
-            sendJson(res, 200, await service.obtenerMesas());
+            const mesas = await service.obtenerMesas();
+            sendJson(res, 200, { status: "success", data: mesas });
             return;
         }
 
@@ -24,47 +26,41 @@ export async function routerMesa(req: IncomingMessage, res: ServerResponse) {
             const mesa = await service.obtenerMesaPorId(id);
 
             if (!mesa) {
-                sendJson(res, 404, { error: "El id no existe" });
-                return;
+                throw new NotFoundError("La mesa no existe");
             }
 
-            sendJson(res, 200, mesa);
+            sendJson(res, 200, { status: "success", data: mesa });
             return;
         }
 
         if (metodo === "POST" && url === "/mesas") {
             const body = await ReadBody(req);
-            await routeHandler(res, async () => {
-                const m = JSON.parse(body);
-                const nuevo = await service.guardarMesa(m);
-                sendJson(res, 201, { mensaje: "Mesa agregada correctamente", mesa: nuevo });
-            });
+            const m = JSON.parse(body);
+            const nuevo = await service.guardarMesa(m);
+            sendJson(res, 201, { status: "success", message: "Mesa agregada", data: nuevo });
             return;
         }
 
         if (metodo === "PUT" && partes.length === 3 && partes[1] === "mesas") {
             const id = Number(partes[2]);
             const body = await ReadBody(req);
-
-            await routeHandler(res, async () => {
-                const m = JSON.parse(body);
-                m.idMesa = id;
-                await service.actualizarMesa(m);
-                sendJson(res, 200, { mensaje: "Mesa actualizada" });
-            });
+            const m = JSON.parse(body);
+            m.idMesa = id;
+            await service.actualizarMesa(m);
+            sendJson(res, 200, { status: "success", message: "Mesa actualizada" });
             return;
         }
 
         if (metodo === "DELETE" && partes.length === 3 && partes[1] === "mesas") {
             const id = Number(partes[2]);
             await service.eliminarMesa(id);
-            sendJson(res, 200, { mensaje: "Mesa eliminada" });
+            sendJson(res, 200, { status: "success", message: "Mesa eliminada" });
             return;
         }
 
-        return
+        sendJson(res, 404, { status: "fail", message: "Ruta no encontrada" });
 
     } catch (error) {
-        sendJson(res, 500, { error: (error as Error).message });
+        handleError(res, error);
     }
 }

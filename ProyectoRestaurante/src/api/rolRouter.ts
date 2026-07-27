@@ -2,7 +2,8 @@ import { IncomingMessage, ServerResponse } from "http";
 import { RolService } from "../service/rolService";
 import { ReadBody } from "./readBody";
 import { sendJson } from "./sendJSON";
-import { routeHandler } from "../utils/routeHandler";
+import { handleError } from "../utils/errorHandler";
+import { NotFoundError } from "../errors/NotFoundError";
 
 const service = new RolService();
 
@@ -15,7 +16,8 @@ export async function routerRol(req: IncomingMessage, res: ServerResponse) {
 
     try {
         if (metodo === "GET" && url === "/roles") {
-            sendJson(res, 200, await service.obtenerRoles());
+            const roles = await service.obtenerRoles();
+            sendJson(res, 200, { status: "success", data: roles });
             return;
         }
 
@@ -24,47 +26,41 @@ export async function routerRol(req: IncomingMessage, res: ServerResponse) {
             const rol = await service.obtenerRolPorId(id);
 
             if (!rol) {
-                sendJson(res, 404, { error: "El id no existe" });
-                return;
+                throw new NotFoundError("El rol no existe");
             }
 
-            sendJson(res, 200, rol);
+            sendJson(res, 200, { status: "success", data: rol });
             return;
         }
 
         if (metodo === "POST" && url === "/roles") {
             const body = await ReadBody(req);
-            await routeHandler(res, async () => {
-                const r = JSON.parse(body);
-                const nuevo = await service.guardarRol(r);
-                sendJson(res, 201, { mensaje: "Rol agregado correctamente", rol: nuevo });
-            });
+            const r = JSON.parse(body);
+            const nuevo = await service.guardarRol(r);
+            sendJson(res, 201, { status: "success", message: "Rol agregado", data: nuevo });
             return;
         }
 
         if (metodo === "PUT" && partes.length === 3 && partes[1] === "roles") {
             const id = Number(partes[2]);
             const body = await ReadBody(req);
-
-            await routeHandler(res, async () => {
-                const r = JSON.parse(body);
-                r.idRol = id;
-                await service.actualizarRol(r);
-                sendJson(res, 200, { mensaje: "Rol actualizado" });
-            });
+            const r = JSON.parse(body);
+            r.idRol = id;
+            await service.actualizarRol(r);
+            sendJson(res, 200, { status: "success", message: "Rol actualizado" });
             return;
         }
 
         if (metodo === "DELETE" && partes.length === 3 && partes[1] === "roles") {
             const id = Number(partes[2]);
             await service.eliminarRol(id);
-            sendJson(res, 200, { mensaje: "Rol eliminado" });
+            sendJson(res, 200, { status: "success", message: "Rol eliminado" });
             return;
         }
 
-        return 
+        sendJson(res, 404, { status: "fail", message: "Ruta no encontrada" });
 
     } catch (error) {
-        sendJson(res, 500, { error: (error as Error).message });
+        handleError(res, error);
     }
 }

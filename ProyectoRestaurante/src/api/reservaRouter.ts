@@ -2,7 +2,8 @@ import { IncomingMessage, ServerResponse } from "http";
 import { ReservaService } from "../service/reservaService";
 import { ReadBody } from "./readBody";
 import { sendJson } from "./sendJSON";
-import { routeHandler } from "../utils/routeHandler";
+import { handleError } from "../utils/errorHandler";
+import { NotFoundError } from "../errors/NotFoundError";
 
 const service = new ReservaService();
 
@@ -15,7 +16,8 @@ export async function routerReserva(req: IncomingMessage, res: ServerResponse) {
 
     try {
         if (metodo === "GET" && url === "/reservas") {
-            sendJson(res, 200, await service.obtenerReservas());
+            const reservas = await service.obtenerReservas();
+            sendJson(res, 200, { status: "success", data: reservas });
             return;
         }
 
@@ -24,47 +26,41 @@ export async function routerReserva(req: IncomingMessage, res: ServerResponse) {
             const reserva = await service.obtenerReservaPorId(id);
 
             if (!reserva) {
-                sendJson(res, 404, { error: "El id no existe" });
-                return;
+                throw new NotFoundError("La reserva no existe");
             }
 
-            sendJson(res, 200, reserva);
+            sendJson(res, 200, { status: "success", data: reserva });
             return;
         }
-        
+
         if (metodo === "POST" && url === "/reservas") {
             const body = await ReadBody(req);
-            await routeHandler(res, async () => {
-                const r = JSON.parse(body);
-                const nuevo = await service.guardarReserva(r);
-                sendJson(res, 201, { mensaje: "Reserva agregada correctamente", reserva: nuevo });
-            });
+            const r = JSON.parse(body);
+            const nuevo = await service.guardarReserva(r);
+            sendJson(res, 201, { status: "success", message: "Reserva agregada", data: nuevo });
             return;
         }
 
         if (metodo === "PUT" && partes.length === 3 && partes[1] === "reservas") {
             const id = Number(partes[2]);
             const body = await ReadBody(req);
-
-            await routeHandler(res, async () => {
-                const r = JSON.parse(body);
-                r.idReserva = id;
-                await service.actualizarReserva(r);
-                sendJson(res, 200, { mensaje: "Reserva actualizada" });
-            });
+            const r = JSON.parse(body);
+            r.idReserva = id;
+            await service.actualizarReserva(r);
+            sendJson(res, 200, { status: "success", message: "Reserva actualizada" });
             return;
         }
 
         if (metodo === "DELETE" && partes.length === 3 && partes[1] === "reservas") {
             const id = Number(partes[2]);
             await service.eliminarReserva(id);
-            sendJson(res, 200, { mensaje: "Reserva eliminada" });
+            sendJson(res, 200, { status: "success", message: "Reserva eliminada" });
             return;
         }
 
-        return
+        sendJson(res, 404, { status: "fail", message: "Ruta no encontrada" });
 
     } catch (error) {
-        sendJson(res, 500, { error: (error as Error).message });
+        handleError(res, error);
     }
 }

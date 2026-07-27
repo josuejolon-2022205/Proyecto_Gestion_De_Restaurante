@@ -2,7 +2,8 @@ import { IncomingMessage, ServerResponse } from "http";
 import { UsuarioService } from "../service/usuarioService";
 import { ReadBody } from "./readBody";
 import { sendJson } from "./sendJSON";
-import { routeHandler } from "../utils/routeHandler";
+import { handleError } from "../utils/errorHandler";
+import { NotFoundError } from "../errors/NotFoundError";
 
 const service = new UsuarioService();
 
@@ -15,7 +16,8 @@ export async function routerUsuario(req: IncomingMessage, res: ServerResponse) {
 
     try {
         if (metodo === "GET" && url === "/usuarios") {
-            sendJson(res, 200, await service.obtenerUsuarios());
+            const usuarios = await service.obtenerUsuarios();
+            sendJson(res, 200, { status: "success", data: usuarios });
             return;
         }
 
@@ -24,47 +26,41 @@ export async function routerUsuario(req: IncomingMessage, res: ServerResponse) {
             const usuario = await service.obtenerUsuarioPorId(id);
 
             if (!usuario) {
-                sendJson(res, 404, { error: "El id no existe" });
-                return;
+                throw new NotFoundError("El usuario no existe");
             }
 
-            sendJson(res, 200, usuario);
+            sendJson(res, 200, { status: "success", data: usuario });
             return;
         }
 
-    if (metodo === "POST" && url === "/usuarios") {
-        const body = await ReadBody(req);
-        await routeHandler(res, async () => {
+        if (metodo === "POST" && url === "/usuarios") {
+            const body = await ReadBody(req);
             const u = JSON.parse(body);
             const nuevo = await service.guardarUsuario(u);
-            sendJson(res, 201, { mensaje: "Usuario agregado correctamente", usuario: nuevo });
-        });
-        return;
-    }
+            sendJson(res, 201, { status: "success", message: "Usuario agregado", data: nuevo });
+            return;
+        }
 
         if (metodo === "PUT" && partes.length === 3 && partes[1] === "usuarios") {
             const id = Number(partes[2]);
             const body = await ReadBody(req);
-
-            await routeHandler(res, async () => {
-                const u = JSON.parse(body);
-                u.idUsuario = id;
-                await service.actualizarUsuario(u);
-                sendJson(res, 200, { mensaje: "Usuario actualizado" });
-            });
+            const u = JSON.parse(body);
+            u.idUsuario = id;
+            await service.actualizarUsuario(u);
+            sendJson(res, 200, { status: "success", message: "Usuario actualizado" });
             return;
         }
 
         if (metodo === "DELETE" && partes.length === 3 && partes[1] === "usuarios") {
             const id = Number(partes[2]);
             await service.eliminarUsuario(id);
-            sendJson(res, 200, { mensaje: "Usuario eliminado" });
+            sendJson(res, 200, { status: "success", message: "Usuario eliminado" });
             return;
         }
 
-        return
+        sendJson(res, 404, { status: "fail", message: "Ruta no encontrada" });
 
     } catch (error) {
-        sendJson(res, 500, { error: (error as Error).message });
+        handleError(res, error);
     }
 }

@@ -2,69 +2,102 @@ import { IncomingMessage, ServerResponse } from "http";
 import { PedidoService } from "../service/pedidoService";
 import { ReadBody } from "./readBody";
 import { sendJson } from "./sendJSON";
-import { routeHandler } from "../utils/routeHandler";
+import { handleError } from "../utils/errorHandler";
+import { NotFoundError } from "../errors/NotFoundError";
 
 const service = new PedidoService();
+
+function parseId(parte: string): number | null {
+    const id = Number(parte);
+    return isNaN(id) || id <= 0 ? null : id;
+}
 
 export async function routerPedido(req: IncomingMessage, res: ServerResponse) {
     res.setHeader("Content-Type", "application/json");
 
     const url = req.url ?? "";
     const metodo = req.method ?? "";
-    const partes = url.split("/");
+    const partes = url.split("/").filter(Boolean);
 
     try {
-        if (metodo === "GET" && url === "/pedidos") {
-            sendJson(res, 200, await service.obtenerPedidos());
+        if (metodo === "GET" && partes.length === 1 && partes[0] === "pedidos") {
+            const pedidos = await service.obtenerPedidos();
+            sendJson(res, 200, { status: "success", data: pedidos });
             return;
         }
 
-        if (metodo === "GET" && partes.length === 3 && partes[1] === "pedidos") {
-            const id = Number(partes[2]);
-            const pedido = await service.obtenerPedidoPorId(id);
-
-            if (!pedido) {
-                sendJson(res, 404, { error: "El id no existe" });
+        if (metodo === "GET" && partes.length === 2 && partes[0] === "pedidos") {
+            const id = parseId(partes[1]);
+            if (!id) {
+                sendJson(res, 400, { status: "fail", message: "ID inválido" });
                 return;
             }
-
-            sendJson(res, 200, pedido);
+            const pedido = await service.obtenerPedidoPorId(id);
+            if (!pedido) {
+                throw new NotFoundError("El pedido no existe");
+            }
+            sendJson(res, 200, { status: "success", data: pedido });
             return;
         }
 
-        if (metodo === "POST" && url === "/pedidos") {
+        if (metodo === "POST" && partes.length === 1 && partes[0] === "pedidos") {
             const body = await ReadBody(req);
-            await routeHandler(res, async () => {
-                const p = JSON.parse(body);
-                const nuevo = await service.guardarPedido(p);
-                sendJson(res, 201, { mensaje: "Pedido agregado correctamente", pedido: nuevo });
-            });
+            if (!body || body.trim() === "") {
+                sendJson(res, 400, { status: "fail", message: "Body vacío" });
+                return;
+            }
+            let p: unknown;
+            try {
+                p = JSON.parse(body);
+            } catch {
+                sendJson(res, 400, { status: "fail", message: "JSON inválido" });
+                return;
+            }
+            const nuevo = await service.guardarPedido(p);
+            sendJson(res, 201, { status: "success", message: "Pedido agregado", data: nuevo });
             return;
         }
 
-        if (metodo === "PUT" && partes.length === 3 && partes[1] === "pedidos") {
-            const id = Number(partes[2]);
+        if (metodo === "PUT" && partes.length === 2 && partes[0] === "pedidos") {
+            const id = parseId(partes[1]);
+            if (!id) {
+                sendJson(res, 400, { status: "fail", message: "ID inválido" });
+                return;
+            }
             const body = await ReadBody(req);
-
-            await routeHandler(res, async () => {
-                const p = JSON.parse(body);
-                p.idPedido = id;
-                await service.actualizarPedido(p);
-                sendJson(res, 200, { mensaje: "Pedido actualizado" });
-            });
+            if (!body || body.trim() === "") {
+                sendJson(res, 400, { status: "fail", message: "Body vacío" });
+                return;
+            }
+            let p: unknown;
+            try {
+                p = JSON.parse(body);
+            } catch {
+                sendJson(res, 400, { status: "fail", message: "JSON inválido" });
+                return;
+            }
+            if (typeof p === "object" && p !== null) {
+                (p as Record<string, unknown>).idPedido = id;
+            }
+            await service.actualizarPedido(p);
+            sendJson(res, 200, { status: "success", message: "Pedido actualizado" });
             return;
         }
 
-        if (metodo === "DELETE" && partes.length === 3 && partes[1] === "pedidos") {
-            const id = Number(partes[2]);
+        if (metodo === "DELETE" && partes.length === 2 && partes[0] === "pedidos") {
+            const id = parseId(partes[1]);
+            if (!id) {
+                sendJson(res, 400, { status: "fail", message: "ID inválido" });
+                return;
+            }
             await service.eliminarPedido(id);
-            sendJson(res, 200, { mensaje: "Pedido eliminado" });
+            sendJson(res, 200, { status: "success", message: "Pedido eliminado" });
             return;
         }
 
-        return 
+        sendJson(res, 404, { status: "fail", message: "Ruta no encontrada" });
 
     } catch (error) {
-        sendJson(res, 500, { error: (error as Error).message });
+        handleError(res, error);
     }
 }

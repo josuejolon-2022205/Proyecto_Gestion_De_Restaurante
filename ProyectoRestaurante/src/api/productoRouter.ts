@@ -2,7 +2,8 @@ import { IncomingMessage, ServerResponse } from "http";
 import { ProductoService } from "../service/productoService";
 import { ReadBody } from "./readBody";
 import { sendJson } from "./sendJSON";
-import { routeHandler } from "../utils/routeHandler";
+import { handleError } from "../utils/errorHandler";
+import { NotFoundError } from "../errors/NotFoundError";
 
 const service = new ProductoService();
 
@@ -15,7 +16,8 @@ export async function routerProducto(req: IncomingMessage, res: ServerResponse) 
 
     try {
         if (metodo === "GET" && url === "/productos") {
-            sendJson(res, 200, await service.obtenerProductos());
+            const productos = await service.obtenerProductos();
+            sendJson(res, 200, { status: "success", data: productos });
             return;
         }
 
@@ -24,48 +26,41 @@ export async function routerProducto(req: IncomingMessage, res: ServerResponse) 
             const producto = await service.obtenerProductoPorId(id);
 
             if (!producto) {
-                sendJson(res, 404, { error: "El id no existe" });
-                return;
+                throw new NotFoundError("El producto no existe");
             }
 
-            sendJson(res, 200, producto);
+            sendJson(res, 200, { status: "success", data: producto });
             return;
         }
 
         if (metodo === "POST" && url === "/productos") {
             const body = await ReadBody(req);
-            await routeHandler(res, async () => {
-                const p = JSON.parse(body);
-                const nuevo = await service.guardarProducto(p);
-                sendJson(res, 201, { mensaje: "Producto agregado correctamente", producto: nuevo });
-            });
+            const p = JSON.parse(body);
+            const nuevo = await service.guardarProducto(p);
+            sendJson(res, 201, { status: "success", message: "Producto agregado", data: nuevo });
             return;
         }
-
 
         if (metodo === "PUT" && partes.length === 3 && partes[1] === "productos") {
             const id = Number(partes[2]);
             const body = await ReadBody(req);
-
-            await routeHandler(res, async () => {
-                const p = JSON.parse(body);
-                p.idProducto = id;
-                await service.actualizarProducto(p);
-                sendJson(res, 200, { mensaje: "Producto actualizado" });
-            });
+            const p = JSON.parse(body);
+            p.idProducto = id;
+            await service.actualizarProducto(p);
+            sendJson(res, 200, { status: "success", message: "Producto actualizado" });
             return;
         }
 
         if (metodo === "DELETE" && partes.length === 3 && partes[1] === "productos") {
             const id = Number(partes[2]);
             await service.eliminarProducto(id);
-            sendJson(res, 200, { mensaje: "Producto eliminado" });
+            sendJson(res, 200, { status: "success", message: "Producto eliminado" });
             return;
         }
 
-        return
+        sendJson(res, 404, { status: "fail", message: "Ruta no encontrada" });
 
     } catch (error) {
-        sendJson(res, 500, { error: (error as Error).message });
+        handleError(res, error);
     }
 }
