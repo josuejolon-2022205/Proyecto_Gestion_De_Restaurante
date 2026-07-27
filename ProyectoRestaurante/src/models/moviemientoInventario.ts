@@ -1,6 +1,8 @@
+import { tipoMovimiento } from "../enums/tipoMovimiento";
+
 export interface MovimientoInventario {
     idMovimiento: number;
-    tipoMovimiento: string;
+    tipoMovimiento: tipoMovimiento;
     cantidad: number;
     fechaMovimiento: string;
     descripcion: string;
