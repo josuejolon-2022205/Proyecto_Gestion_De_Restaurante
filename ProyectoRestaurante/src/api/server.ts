@@ -16,60 +16,95 @@ import { routerPedido } from "./pedidoRouter";
 import { routerMesa } from "./mesaRouter";
 import { routerProveedor } from "./proveedorRouter";
 import { routerPago } from "./pagoRouter";
+import { sendJson } from "./sendJSON";
 
 export const server = http.createServer(async (req, res) => {
-    await routerCargo(req, res);
-    if (res.headersSent) return;
+    const url = req.url ?? "";
 
-    await routerEmpleado(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/cargos")) {
+        await routerCargo(req, res);
+        return;
+    }
 
-    await routerIngrediente(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/empleados")) {
+        await routerEmpleado(req, res);
+        return;
+    }
 
-    await routerProductoIngrediente(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/ingredientes")) {
+        await routerIngrediente(req, res);
+        return;
+    }
 
-    await routerCategoriaProducto(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/productoIngredientes")) {
+        await routerProductoIngrediente(req, res);
+        return;
+    }
 
-    await routerDetallePedido(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/categorias")) {
+        await routerCategoriaProducto(req, res);
+        return;
+    }
 
-    await clienteRouter(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/detalles")) {
+        await routerDetallePedido(req, res);
+        return;
+    }
 
-    await routerUsuario(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/clientes")) {
+        await clienteRouter(req, res);
+        return;
+    }
 
-    await routerReserva(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/usuarios")) {
+        await routerUsuario(req, res);
+        return;
+    }
 
-    await routerFactura(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/reservas")) {
+        await routerReserva(req, res);
+        return;
+    }
 
-    await routerMovimientoInventario(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/facturas")) {
+        await routerFactura(req, res);
+        return;
+    }
 
-    await routerProducto(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/movimientos")) {
+        await routerMovimientoInventario(req, res);
+        return;
+    }
 
-    await routerRol(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/productos")) {
+        await routerProducto(req, res);
+        return;
+    }
 
-    await routerPedido(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/roles")) {
+        await routerRol(req, res);
+        return;
+    }
 
-    await routerMesa(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/pedidos")) {
+        await routerPedido(req, res);
+        return;
+    }
 
-    await routerProveedor(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/mesas")) {
+        await routerMesa(req, res);
+        return;
+    }
 
-    await routerPago(req, res);
-    if (res.headersSent) return;
+    if (url.startsWith("/proveedores")) {
+        await routerProveedor(req, res);
+        return;
+    }
 
-    // Si ningún router respondió, enviar 404 global
-    res.writeHead(404, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "No se encontro la ruta" }));
+    if (url.startsWith("/pagos")) {
+        await routerPago(req, res);
+        return;
+    }
+
+    sendJson(res, 404, { error: "Ruta no encontrada" });
 });
