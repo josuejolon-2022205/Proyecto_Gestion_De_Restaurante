@@ -23,8 +23,15 @@ export class CategoriaProductoService {
 
     async actualizarCategoria(categoria: unknown): Promise<void> {
         const datosValidados = validate(categoriaProductoUpdateSchema, categoria);
-        const actualizado = await this.repository.actualizarCategoria(datosValidados as CategoriaProducto);
 
+        const existente = await this.repository.obtenerCategoriaPorId(datosValidados.idCategoriaProducto);
+        if (!existente) {
+            throw new NotFoundError("La categoría no existe.");
+        }
+
+        const categoriaCompleta: CategoriaProducto = { ...existente, ...datosValidados };
+
+        const actualizado = await this.repository.actualizarCategoria(categoriaCompleta);
         if (!actualizado) {
             throw new NotFoundError("La categoría no existe.");
         }

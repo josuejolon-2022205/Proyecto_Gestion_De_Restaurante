@@ -1,7 +1,8 @@
 import { IngredienteRepository } from "../data/ingredienteRepository";
 import { Ingrediente } from "../models/Ingrediente";
-import { ingredienteSchema } from "../validations/ingredienteValidator";
+import { ingredienteSchema, ingredienteUpdateSchema } from "../validations/ingredienteValidator";
 import { validate } from "../validations/validate";
+import { NotFoundError } from "../errors/NotFoundError";
 
 export class IngredienteService {
 
@@ -15,25 +16,33 @@ export class IngredienteService {
         return await this.repository.obtenerIngredientePorId(id);
     }
 
-    async guardarIngrediente(ingrediente: Omit<Ingrediente, "idIngrediente">): Promise<Ingrediente> {
+    // Cambiado: ahora acepta unknown
+    async guardarIngrediente(ingrediente: unknown): Promise<Ingrediente> {
         const datosValidados = validate(ingredienteSchema, ingrediente);
         return await this.repository.guardarIngrediente(datosValidados as Ingrediente);
     }
 
-    async actualizarIngrediente(ingrediente: Ingrediente): Promise<void> {
-        const datosValidados = validate(ingredienteSchema, ingrediente);
-        const actualizado = await this.repository.actualizarIngrediente(datosValidados as Ingrediente);
+    // Cambiado: ahora acepta unknown
+    async actualizarIngrediente(ingrediente: unknown): Promise<void> {
+        const datosValidados = validate(ingredienteUpdateSchema, ingrediente);
 
+        const existente = await this.repository.obtenerIngredientePorId(datosValidados.idIngrediente);
+        if (!existente) {
+            throw new NotFoundError("El ingrediente no existe.");
+        }
+
+        const ingredienteCompleto: Ingrediente = { ...existente, ...datosValidados };
+
+        const actualizado = await this.repository.actualizarIngrediente(ingredienteCompleto);
         if (!actualizado) {
-            throw new Error("El ingrediente no existe.");
+            throw new NotFoundError("El ingrediente no existe.");
         }
     }
 
     async eliminarIngrediente(id: number): Promise<void> {
         const eliminado = await this.repository.eliminarIngrediente(id);
-
         if (!eliminado) {
-            throw new Error("El ingrediente no existe.");
+            throw new NotFoundError("El ingrediente no existe.");
         }
     }
 }

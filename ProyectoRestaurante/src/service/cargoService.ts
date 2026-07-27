@@ -23,8 +23,15 @@ export class CargoService {
 
     async actualizarCargo(cargo: unknown): Promise<void> {
         const datosValidados = validate(cargoUpdateSchema, cargo);
-        const actualizado = await this.repository.actualizarCargo(datosValidados as Cargo);
-        
+
+        const existente = await this.repository.obtenerCargoPorId(datosValidados.idCargo);
+        if (!existente) {
+            throw new NotFoundError("El cargo no existe.");
+        }
+
+        const cargoCompleto: Cargo = { ...existente, ...datosValidados };
+
+        const actualizado = await this.repository.actualizarCargo(cargoCompleto);
         if (!actualizado) {
             throw new NotFoundError("El cargo no existe.");
         }

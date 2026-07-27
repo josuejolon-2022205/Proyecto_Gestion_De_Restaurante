@@ -30,8 +30,15 @@ export class ProveedorService {
 
     async actualizarProveedor(proveedor: unknown): Promise<void> {
         const datosValidados = validate(proveedorUpdateSchema, proveedor);
-        const actualizado = await this.repository.actualizarProveedor(datosValidados as Proveedor);
 
+        const existente = await this.repository.obtenerProveedorPorId(datosValidados.idProveedor);
+        if (!existente) {
+            throw new NotFoundError("El proveedor no existe.");
+        }
+
+        const proveedorCompleto: Proveedor = { ...existente, ...datosValidados };
+
+        const actualizado = await this.repository.actualizarProveedor(proveedorCompleto);
         if (!actualizado) {
             throw new NotFoundError("El proveedor no existe.");
         }

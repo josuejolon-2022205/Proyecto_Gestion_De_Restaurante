@@ -20,20 +20,24 @@ export class ClienteService {
         const datosValidados = validate(clienteSchema, cliente);
 
         const correoExiste = await this.repository.obtenerClientePorCorreo(datosValidados.correoCliente);
-        if (correoExiste) {
-            throw new Error("El correo ya está registrado.");
-        }
         return await this.repository.guardarCliente(datosValidados);
     }
 
     async actualizarCliente(cliente: unknown): Promise<void> {
-            const datosValidados = validate(clienteUpdateSchema, cliente);
-            const actualizado = await this.repository.actualizarCliente(datosValidados as Cliente);
+        const datosValidados = validate(clienteUpdateSchema, cliente);
 
-            if(!actualizado) {
-                throw new NotFoundError("El cliente no existe.");
-            }
+        const existente = await this.repository.obtenerClientePorId(datosValidados.idCliente);
+        if (!existente) {
+            throw new NotFoundError("El cliente no existe.");
         }
+
+        const clienteCompleto: Cliente = { ...existente, ...datosValidados };
+
+        const actualizado = await this.repository.actualizarCliente(clienteCompleto);
+        if (!actualizado) {
+            throw new NotFoundError("El cliente no existe.");
+        }
+    }
 
     async eliminarCliente(id: number): Promise<void> {
         const eliminado = await this.repository.eliminarCliente(id);

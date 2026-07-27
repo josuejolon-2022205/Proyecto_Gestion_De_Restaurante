@@ -23,8 +23,15 @@ export class MovimientoInventarioService {
 
     async actualizarMovimiento(movimiento: unknown): Promise<void> {
         const datosValidados = validate(movimientoInventarioUpdateSchema, movimiento);
-        const actualizado = await this.repository.actualizarMovimiento(datosValidados as MovimientoInventario);
 
+        const existente = await this.repository.obtenerMovimientoPorId(datosValidados.idMovimiento);
+        if (!existente) {
+            throw new NotFoundError("El movimiento no existe.");
+        }
+
+        const movimientoCompleto: MovimientoInventario = { ...existente, ...datosValidados };
+
+        const actualizado = await this.repository.actualizarMovimiento(movimientoCompleto);
         if (!actualizado) {
             throw new NotFoundError("El movimiento no existe.");
         }
@@ -32,7 +39,6 @@ export class MovimientoInventarioService {
 
     async eliminarMovimiento(id: number): Promise<void> {
         const eliminado = await this.repository.eliminarMovimiento(id);
-
         if (!eliminado) {
             throw new NotFoundError("El movimiento no existe.");
         }

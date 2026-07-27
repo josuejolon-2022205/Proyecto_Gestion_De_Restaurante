@@ -23,8 +23,15 @@ export class ProductoIngredienteService {
 
     async actualizarProductoIngrediente(pi: unknown): Promise<void> {
         const datosValidados = validate(productoIngredienteUpdateSchema, pi);
-        const actualizado = await this.repository.actualizarProductoIngrediente(datosValidados as ProductoIngrediente);
 
+        const existente = await this.repository.obtenerProductoIngredientePorId(datosValidados.idProductoIngrediente);
+        if (!existente) {
+            throw new NotFoundError("El producto ingrediente no existe.");
+        }
+
+        const piCompleto: ProductoIngrediente = { ...existente, ...datosValidados };
+
+        const actualizado = await this.repository.actualizarProductoIngrediente(piCompleto);
         if (!actualizado) {
             throw new NotFoundError("El producto ingrediente no existe.");
         }

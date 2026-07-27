@@ -23,8 +23,15 @@ export class PagoService {
 
     async actualizarPago(pago: unknown): Promise<void> {
         const datosValidados = validate(pagoUpdateSchema, pago);
-        const actualizado = await this.repository.actualizarPago(datosValidados as Pago);
 
+        const existente = await this.repository.obtenerPagoPorId(datosValidados.idPago);
+        if (!existente) {
+            throw new NotFoundError("El pago no existe.");
+        }
+
+        const pagoCompleto: Pago = { ...existente, ...datosValidados };
+
+        const actualizado = await this.repository.actualizarPago(pagoCompleto);
         if (!actualizado) {
             throw new NotFoundError("El pago no existe.");
         }

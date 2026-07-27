@@ -23,8 +23,15 @@ export class ReservaService {
 
     async actualizarReserva(reserva: unknown): Promise<void> {
         const datosValidados = validate(reservaUpdateSchema, reserva);
-        const actualizado = await this.repository.actualizarReserva(datosValidados as Reserva);
 
+        const existente = await this.repository.obtenerReservaPorId(datosValidados.idReserva);
+        if (!existente) {
+            throw new NotFoundError("La reserva no existe.");
+        }
+
+        const reservaCompleta: Reserva = { ...existente, ...datosValidados };
+
+        const actualizado = await this.repository.actualizarReserva(reservaCompleta);
         if (!actualizado) {
             throw new NotFoundError("La reserva no existe.");
         }

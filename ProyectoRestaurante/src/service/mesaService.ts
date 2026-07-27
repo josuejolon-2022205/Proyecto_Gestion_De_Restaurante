@@ -23,8 +23,15 @@ export class MesaService {
 
     async actualizarMesa(mesa: unknown): Promise<void> {
         const datosValidados = validate(mesaUpdateSchema, mesa);
-        const actualizado = await this.repository.actualizarMesa(datosValidados as unknown as Mesa);
 
+        const existente = await this.repository.obtenerMesaPorId(datosValidados.idMesa);
+        if (!existente) {
+            throw new NotFoundError("La mesa no existe.");
+        }
+
+        const mesaCompleta: Mesa = { ...existente, ...datosValidados } as Mesa;
+
+        const actualizado = await this.repository.actualizarMesa(mesaCompleta);
         if (!actualizado) {
             throw new NotFoundError("La mesa no existe.");
         }

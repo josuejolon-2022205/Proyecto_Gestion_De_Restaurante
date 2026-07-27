@@ -23,8 +23,15 @@ export class EmpleadoService {
 
     async actualizarEmpleado(empleado: unknown): Promise<void> {
         const datosValidados = validate(empleadoUpdateSchema, empleado);
-        const actualizado = await this.repository.actualizarEmpleado(datosValidados as Empleado);
 
+        const existente = await this.repository.obtenerEmpleadoPorId(datosValidados.idEmpleado);
+        if (!existente) {
+            throw new NotFoundError("El empleado no existe.");
+        }
+
+        const empleadoCompleto: Empleado = { ...existente, ...datosValidados };
+
+        const actualizado = await this.repository.actualizarEmpleado(empleadoCompleto);
         if (!actualizado) {
             throw new NotFoundError("El empleado no existe.");
         }
@@ -32,7 +39,6 @@ export class EmpleadoService {
 
     async eliminarEmpleado(id: number): Promise<void> {
         const eliminado = await this.repository.eliminarEmpleado(id);
-
         if (!eliminado) {
             throw new NotFoundError("El empleado no existe.");
         }

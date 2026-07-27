@@ -23,8 +23,15 @@ export class PedidoService {
 
     async actualizarPedido(pedido: unknown): Promise<void> {
         const datosValidados = validate(pedidoUpdateSchema, pedido);
-        const actualizado = await this.repository.actualizarPedido(datosValidados as Pedido);
 
+        const existente = await this.repository.obtenerPedidoPorId(datosValidados.idPedido);
+        if (!existente) {
+            throw new NotFoundError("El pedido no existe.");
+        }
+
+        const pedidoCompleto: Pedido = { ...existente, ...datosValidados };
+
+        const actualizado = await this.repository.actualizarPedido(pedidoCompleto);
         if (!actualizado) {
             throw new NotFoundError("El pedido no existe.");
         }
@@ -32,7 +39,6 @@ export class PedidoService {
 
     async eliminarPedido(id: number): Promise<void> {
         const eliminado = await this.repository.eliminarPedido(id);
-
         if (!eliminado) {
             throw new NotFoundError("El pedido no existe.");
         }
