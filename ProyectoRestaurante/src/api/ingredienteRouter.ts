@@ -20,7 +20,7 @@ export async function routerIngrediente(req: IncomingMessage, res: ServerRespons
     const partes = url.split("/").filter(Boolean);
 
     try {
-        // GET /ingredientes
+
         if (metodo === "GET" && partes.length === 1 && partes[0] === "ingredientes") {
             const ingredientes = await service.obtenerIngredientes();
             sendJson(res, 200, { status: "success", data: ingredientes });
