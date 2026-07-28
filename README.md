@@ -1,4 +1,4 @@
-# 🍽️ ProyectoRestaurante
+# ProyectoRestaurante
 
 Backend en **TypeScript** para la gestión integral de un restaurante: clientes, empleados, mesas, pedidos, inventario, facturación y más. Construido con el módulo `http` nativo de Node.js (sin frameworks tipo Express) y **PostgreSQL** como base de datos, con validación de datos mediante **Zod**.
 
@@ -84,12 +84,10 @@ Los estados y catálogos fijos están modelados como `enum` en `src/enums`.
 ```bash
 pnpm install
 
-pnpm dev
+pnpm run dev
 ```
 
 El servidor arranca en `http://localhost:3000`.
-
-> **Nota:** la configuración de conexión a la base de datos (`src/config/database.ts`) actualmente tiene los datos (host, usuario, contraseña, nombre de la base) escritos directamente en el código. Antes de subir esto a un repositorio público o a producción, conviene moverlos a variables de entorno (`.env` + `dotenv`) para no exponer credenciales.
 
 ## Manejo de errores
 
